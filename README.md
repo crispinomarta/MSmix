@@ -1,10 +1,14 @@
 
 # MSmix
 
-This package allows the fit and analysis of finite Mixtures of Mallows models with Spearman Distance for full and partial rankings with arbitrary missing positions. 
+This package allows the fit and analysis of finite Mixtures of Mallows models with Spearman Distance 
+for full and partial rankings with arbitrary missing positions. 
 Inference is conducted within the maximum likelihood framework via Expectation-Maximization algorithms. 
-Estimation uncertainty is tackled via diverse versions of bootstrapping as well as via Hessian-based standard errors calculations. 
-The most relevant reference of the methods is Crispino, Mollica, Astuti and Tardella (2023) (https://link.springer.com/article/10.1007/s11222-023-10266-8)
+Estimation uncertainty is tackled via diverse versions of bootstrapping as well as via Hessian-based 
+standard errors calculations. 
+
+The most relevant reference of the methods is Crispino, Mollica, Astuti and Tardella (2023) 
+https://link.springer.com/article/10.1007/s11222-023-10266-8
 
 ## Installation
 
