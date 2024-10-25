@@ -23,9 +23,15 @@ utils::globalVariables(c(".","amv"))
 #' @importFrom reshape melt
 #' @importFrom scales hue_pal
 #' @importFrom spsUtil quiet
-#' @importFrom stats addmargins density dist heatmap na.omit qnorm runif uniroot
+#' @importFrom stats addmargins density dist heatmap na.omit qnorm rnorm runif uniroot
 #' @importFrom utils getFromNamespace menu sessionInfo
 NULL
+
+# is_numeric_vector ----
+# Check if an object is a numeric vector (and not a list)
+is_numeric_vector <- function(xx) {
+  is.numeric(xx) && is.atomic(xx)
+}
 
 # B_matrix ----
 Bmatrix <- function(X) {
@@ -261,7 +267,7 @@ data_completion <- function(rankings,ref_rho) {
 
 
     if (any(is.na(ref_rho))) {
-    stop("The argument 'ref_rho' must contain full rankings in each row.\n")
+      stop("The argument 'ref_rho' must contain full rankings in each row.\n")
     }
 
     if (!(identical(dim(rankings),dim(ref_rho)))) {
@@ -690,9 +696,9 @@ plot.data_descr <- function(x, cex_text_mean = 1, cex_symb_mean = 12, marg_by = 
     marg_melt <- quiet(melt(prop.table(data_descr_out$marginals[-NN, -NN],margin=(if (marg_by=="item") 2 else 1))))
     ggp_marg <- ggplot(data = marg_melt, aes(x = marg_melt$X1, y = marg_melt$X2, fill = marg_melt$value)) +
       geom_tile() +
-     # scale_fill_gradientn(colours=hcl.colors(10,palette="inferno",rev=TRUE),na.value = "transparent",
-     #                       breaks=seq(0,1,.2),labels=seq(0,1,.2),
-     #                       limits=c(0,1)) +
+      # scale_fill_gradientn(colours=hcl.colors(10,palette="inferno",rev=TRUE),na.value = "transparent",
+      #                       breaks=seq(0,1,.2),labels=seq(0,1,.2),
+      #                       limits=c(0,1)) +
       scale_fill_gradient(low = "mintcream", high = "slateblue3") +
       guides(fill = guide_legend("Prop.")) +
       ggtitle(paste("Marginal distributions by", (if (marg_by=="item") "item" else "rank"))) +
@@ -788,13 +794,13 @@ plot.data_descr <- function(x, cex_text_mean = 1, cex_symb_mean = 12, marg_by = 
 #' @export
 #'
 rMSmix <- function(sample_size = 1,
-                 n_items,
-                 n_clust = 1,
-                 rho = NULL,
-                 theta = NULL,
-                 weights = NULL,
-                 uniform = FALSE,
-                 mh = TRUE) {
+                   n_items,
+                   n_clust = 1,
+                   rho = NULL,
+                   theta = NULL,
+                   weights = NULL,
+                   uniform = FALSE,
+                   mh = TRUE) {
   if (is.null(rho)) {
     if (uniform | n_clust == 1) {
       rho <- t(apply(matrix(1:n_items, nrow = n_items, ncol = n_clust), 2, sample))
@@ -883,11 +889,13 @@ rMSmix <- function(sample_size = 1,
 
 
 # rMSmoe ----
-#' Random samples from a mixture of experts of Mallows models with Spearman distance
+#' Random samples from a MoE of Mallows models with Spearman distance
 #'
 #' @description Draw random samples of full rankings from a mixture of experts of Mallow models with Spearman distance.
 #'
 #' @details
+#' The case with a single mixture component (\eqn{G=1}) implies that covariates are not allowed and coincides with the homogeneous Mallow models with Spearman distance. The case with multiple mixture components (\eqn{G>1}) and absence of covariates coincides with the mixture of MMS, thus the functions is equivalent to \code{rMSmix}.
+#'
 #' When \code{n_items > 10} or \code{mh = TRUE}, the random samples are obtained by using the Metropolis-Hastings algorithm, described in Vitelli et al. (2018) and implemented in the \code{sample_mallows} function of the package \code{BayesMallows} package.
 #'
 #' When \code{theta = NULL} is not provided by the user, the concentration parameters are randomly generated from a uniform distribution on the interval \eqn{(1/n^{2},3/n^{1.5})} of some typical values for the precisions.
@@ -896,11 +904,11 @@ rMSmix <- function(sample_size = 1,
 #' the consensus parameters are sampled to favor well-separated clusters, i. e.,  at least at Spearman distance \eqn{\frac{2}{G}\binom{n+1}{3}} from each other.
 #'
 #' @param n_items Number of items.
-#' @param n_clust Number of mixture components. Defaults to 1.
-#' @param X Numeric \eqn{N}\eqn{\times}{x}\eqn{L+1} design matrix.
+#' @param n_clust Number of mixture components. Defaults to 2.
+#' @param X Numeric \eqn{N}\eqn{\times}{x}\eqn{H+1} design matrix.
 #' @param rho Integer \eqn{G}\eqn{\times}{x}\eqn{n} matrix with the component-specific consensus rankings in each row. Defaults to \code{NULL}, meaning that the consensus rankings are randomly generated according to the sampling scheme indicated by the \code{uniform} argument. See Details.
 #' @param theta Numeric vector of \eqn{G} non-negative component-specific precision parameters. Defaults to \code{NULL}, meaning that the concentrations are uniformly generated from an interval containing typical values for the precisions. See Details.
-#' @param beta Numeric \eqn{G}\eqn{\times}{x}\eqn{L+1} matrix of coefficients of the GLM.
+#' @param betas Numeric \eqn{G}\eqn{\times}{x}\eqn{H+1} matrix of coefficients of the GLM.
 #' @param uniform Logical: whether \code{rho} or \code{weights} have to be sampled uniformly on their support. When \code{uniform = FALSE} they are sampled, respectively, to ensure separation among mixture components and populated weights. Used when \eqn{G>1} and either \code{rho} or \code{weights} are \code{NULL} (see Details). Defaults to \code{FALSE}.
 #' @param mh Logical: whether the samples must be drawn with the Metropolis-Hastings (MH) scheme implemented in the \code{BayesMallows} package, rather by direct sampling from the Mallows probability distribution. For \code{n_items > 10}, the MH is always applied to speed up the sampling procedure. Defaults to \code{TRUE}.
 #'
@@ -909,11 +917,13 @@ rMSmix <- function(sample_size = 1,
 #'  \item{\code{samples}}{Integer \eqn{N}\eqn{\times}{x}\eqn{n} matrix with the \code{sample_size} simulated full rankings in each row.}
 #'  \item{\code{rho}}{Integer \eqn{G}\eqn{\times}{x}\eqn{n} matrix with the component-specific consensus rankings used for the simulation in each row.}
 #'  \item{\code{theta}}{Numeric vector of the \eqn{G} component-specific precision parameters used for the simulation.}
-#'  \item{\code{beta}}{Numeric \eqn{G}\eqn{\times}{x}\eqn{L+1} matrix of coefficients of the GLM used for the simulation.}
+#'  \item{\code{betas}}{Numeric \eqn{G}\eqn{\times}{x}\eqn{H+1} matrix of coefficients of the GLM used for the simulation.}
 #'  \item{\code{weights}}{Numeric \eqn{N}\eqn{\times}{x}\eqn{G} matrix of the covariate-dependent class membership probabilities.}
 #'  \item{\code{classification}}{Integer vector of the \code{sample_size} component membership labels.}
 #'
 #' @references
+#' Crispino M, Modugno L and Mollica C (2024+). Integrating covariates in mixtures of Mallows models with Spearman distance for analysing preference rankings.
+#'
 #' Vitelli V, Sørensen Ø, Crispino M, Frigessi A and Arjas E (2018). Probabilistic Preference Learning with the Mallows Rank Model. \emph{Journal of Machine Learning Research}, \bold{18}(158), pages 1--49, ISSN: 1532-4435, \href{https://jmlr.org/papers/v18/15-481.html}{https://jmlr.org/papers/v18/15-481.html}.
 #'
 #' Sørensen Ø, Crispino M, Liu Q and Vitelli V (2020). BayesMallows: An R Package for the Bayesian Mallows Model. \emph{The R Journal}, \bold{12}(1), pages 324--342, DOI: 10.32614/RJ-2020-026.
@@ -930,19 +940,18 @@ rMSmix <- function(sample_size = 1,
 #'
 #' @export
 #'
-
 rMSmoe <- function(n_items,
                    n_clust = 2,
                    X,
                    rho = NULL,
                    theta = NULL,
-                   beta = NULL,
+                   betas = NULL,
                    uniform = FALSE,
                    mh = TRUE){
-
-  if(n_clust==1){
-    stop("Sampling from the MoE-MMS requires a number of clusters n_clust>1.")
-  }
+  # CRI COMMENTO: per fare anche il caso con sola intercetta (corresponding to MS mixture with G>1)
+  # if(n_clust==1){
+  #   stop("Sampling from the MoE-MMS requires a number of clusters n_clust>1.")
+  # }
 
   if (is.null(rho)) {
     if (uniform | n_clust == 1) {
@@ -975,27 +984,39 @@ rMSmoe <- function(n_items,
   }
 
 
-  if(is.vector(X)|ncol(X)==1){
-    stop("X is the design matrix, and must be provided of dimensions sample_size x (L+1), with first column constant.")
-  }
-
-  sample_size = nrow(X)
-  L1 <- ncol(X)
-
-
-  if (is.null(beta)) {
-    stop("Please provide the matrix of regression coefficients") # Marta: qui dovremo campionarli noi
-    #beta <- rbind(rep(0,L1),
-    #              matrix(runif((n_clust-1)*L1,-10,10),nrow = n_clust-1,byrow=T))
+  # if(is.vector(X)){
+  #   stop("X is the design matrix, and must be provided of dimensions sample_size x (+1), with first column constant.")
+  # }
+  if (!is.matrix(X)) {
+    stop("'X' must be an object of class 'matrix'.")
   } else {
-    if((nrow(beta)!= n_clust)|(ncol(beta)!=(L1))|(sum(beta[1,]^2)!=0)){
-      stop('The beta matrix should have dimensions n_clust x (L+1) with first row containing zero entries.')
+    if(!all(X[,1]==1)){
+      stop("The matrix 'X' must have the first column with all entries equal to 1.")
     }
   }
 
+  sample_size = nrow(X)
+  n_coeff <- ncol(X)
 
-  Probs <- exp(X%*%t(beta))
-  Probs <- round(Probs/rowSums(Probs),2)
+
+  if (is.null(betas)) {
+    stop("Please provide the matrix of the GLM regression coefficients") # Marta: qui dovremo campionarli noi
+    #betas <- rbind(rep(0,n_coeff),
+    #              matrix(runif((n_clust-1)*n_coeff,-10,10),nrow = n_clust-1,byrow=T))
+  } else {
+    if((nrow(betas)!= n_clust)|(ncol(betas)!=(n_coeff))|(sum(betas[1,]^2)!=0)){
+      stop('The betas matrix should have dimensions n_clust x (H+1) with first row containing zero entries.')
+    }
+  }
+
+  if(length(theta)==1 & n_coeff>1){
+    stop("Covariates are not allowed in the case of a single mixture component.")
+  }
+
+  Probs <- exp(X%*%t(betas))
+  # CRI COMMENTO: non è pericoloso arrotondare che i pesi potrebbero andare
+  # più facilmente a zero? Toglierei il round.
+  Probs <- round(prop.table(Probs,1),2)
   class <- apply(Probs, 1, function(x)sample(x = 1:n_clust, size = 1, prob = x))
   table_class <- tabulate(class, nbins = n_clust)
   data_sim <- NULL
@@ -1007,7 +1028,7 @@ rMSmoe <- function(n_items,
     for (i in 1:n_clust) {
 
       if (table_class[i] > 0) {
-        data_sim <- rbind(data_sim, sample_mallows(
+        data_sim <- rbind(data_sim, BayesMallows:::sample_mallows(
           n_samples = table_class[i],
           rho0 = rho[i, ],
           alpha0 = theta[i] * n_items,
@@ -1031,9 +1052,11 @@ rMSmoe <- function(n_items,
   classification <- class_temp[ord]
   data_sim <- data_sim[ord, , drop = FALSE]
 
-  return(list(samples = data_sim, rho = rho, theta = theta, beta = beta,
+  return(list(samples = data_sim, rho = rho, theta = theta, betas = betas,
               X = X, weights = Probs, classification = classification))
 }
+
+
 
 # mar_cens ----
 mar_cens <- function(rankings, nranked = NULL, probs = rep(1,ncol(rankings) - 1)){
@@ -1575,7 +1598,7 @@ expected_spear_dist <- function(theta, n_items, log = TRUE) {
 #'   xlab = expression(theta), ylab = expression(log(V[theta](D))),
 #'   main = "Log-variance of the Spearman distance")
 #'
-#' ## Example 4. Log--variance of the Spearman distance for varying number of items
+#' ## Example 4. Log-variance of the Spearman distance for varying number of items
 #' # and values of the concentration parameter.
 #' var_spear_dist_vec <- Vectorize(var_spear_dist, vectorize.args = "theta")
 #' curve(var_spear_dist_vec(x, n_items = 10),
@@ -1894,16 +1917,14 @@ log_lik_db_mix <- function(rho, theta, weights, rankings, freq_compl, cardinalit
 
 # log_lik_db_moe ----
 log_lik_db_moe <- function(rho, theta, weights, rankings, freq_compl, cardinalities) {
-  temp <- MSmix:::log_lik_inter_spearman(
+  temp <- log_lik_inter_spearman(
     rho = rho, theta = theta, rankings = rankings,
     cardinalities = cardinalities
   ) # n_cluster*L matrix
   tmp <- max(temp)
-  log_lik <- c(freq_compl%*%(tmp + log(apply(weights*t(exp(temp-tmp)),1,sum))))
-
+  log_lik <- c(freq_compl %*% (tmp + log(rowSums(weights*t(exp(temp - tmp))))))
   return(log_lik)
 } # scalar
-
 
 
 # log_lik_db_mix_partial ----
@@ -1923,6 +1944,30 @@ log_lik_db_mix_partial <- function(rho,
   log_lik_partial <- c(freq_part %*% log(sapply(temp, sum)))
   return(log_lik_partial)
 } # scalar
+
+# log_lik_db_moe_partial ----
+log_lik_db_moe_partial <- function(rho,
+                                   theta,
+                                   weights,
+                                   aug_list,
+                                   freq_part,
+                                   cardinalities) {
+  # temp <- lapply(aug_list, function(x) {
+  #   weights %*% exp(log_lik_inter_spearman(
+  #     rho = rho, theta = theta, rankings = x,
+  #     cardinalities = cardinalities
+  #   ))
+  # })
+
+  N <- length(aug_list)
+
+  temp <- lapply(1:N, function(x) weights[x,]%*%exp(log_lik_inter_spearman(
+    rho = rho, theta = theta, rankings = aug_list[[x]], cardinalities = cardinalities)))
+
+  log_lik_partial <- c(freq_part %*% log(sapply(temp, sum)))
+  return(log_lik_partial)
+} # scalar
+
 
 
 # lik_partialMSmix ----
@@ -1958,6 +2003,40 @@ lik_partialMSmix <- function(rho, theta, weights, rankings, log = TRUE) {
   return(out)
 } # scalar
 
+# lik_partialMSmoe ----
+lik_partialMSmoe <- function(rho, theta, weights, rankings, log = TRUE) {
+  n_items <- ncol(rankings)
+  N <- nrow(rankings)
+  freq_part <- rep(1, N)
+  rankings_part <- rankings
+  aug_list <- try(data_augmentation(rankings_part, fill_single_na = FALSE), silent = TRUE)
+
+  if (inherits(aug_list, "try-error")) {
+    stop("Data augmentation not carried out because some partial rankings have too many missing entries.\n")
+  }
+
+  cardinalities <- suppressMessages(spear_dist_distr(n_items))
+
+  if (log) {
+    out <- log_lik_db_moe_partial(
+      rho = rho, theta = theta, weights = weights,
+      aug_list = aug_list,
+      freq_part = freq_part,
+      cardinalities = cardinalities
+    )
+  } else {
+    out <- exp(log_lik_db_moe_partial(
+      rho = rho, theta = theta, weights = weights,
+      aug_list = aug_list,
+      freq_part = freq_part,
+      cardinalities = cardinalities
+    ))
+  }
+
+  return(out)
+} # scalar
+
+
 
 # LoglikInterMSmix ----
 LoglikInterMSmix <- function(rho, theta, rankings) {
@@ -1974,6 +2053,14 @@ LoglikMSmix <- function(rho, theta, weights, rankings, obs_freq) {
   temp <- LoglikInterMSmix(rho = rho, theta = theta, rankings = rankings) # n_cluster*nrow(rankings) matrix
   tmp <- max(temp)
   log_lik <- c(obs_freq %*% t(tmp + log(weights %*% exp(temp - tmp))))
+  return(log_lik)
+} # scalar
+
+# LoglikMSmoe ----
+LoglikMSmoe <- function(rho, theta, weights, rankings, obs_freq) {
+  temp <- LoglikInterMSmix(rho = rho, theta = theta, rankings = rankings) # n_cluster*nrow(rankings) matrix
+  tmp <- max(temp)
+  log_lik <- c(obs_freq %*% (tmp + log(rowSums(weights*t(exp(temp - tmp))))))
   return(log_lik)
 } # scalar
 
@@ -2000,7 +2087,23 @@ lik_completeMSmix <- function(rho, theta, weights, rankings, log = TRUE) {
   return(out)
 } # scalar
 
+# lik_completeMSmoe ----
+lik_completeMSmoe <- function(rho, theta, weights, rankings, log = TRUE) {
+  N <- nrow(rankings)
+  obs_freq <- rep(1, N)
 
+  if (log) {
+    out <- LoglikMSmoe(
+      rho = rho, theta = theta, weights = weights,
+      rankings = rankings, obs_freq = obs_freq)
+  } else {
+    out <- exp(LoglikMSmoe(
+      rho = rho, theta = theta, weights = weights,
+      rankings = rankings, obs_freq = obs_freq))
+  }
+
+  return(out)
+} # scalar
 
 
 # likMSmix ----
@@ -2069,7 +2172,7 @@ lik_completeMSmix <- function(rho, theta, weights, rankings, log = TRUE) {
 #' @export
 #'
 likMSmix <- function(rho, theta, weights=(if(length(theta)==1) NULL),
-                   rankings, log = TRUE) {
+                     rankings, log = TRUE) {
   if (is.vector(rho)) {
     rho <- matrix(rho, nrow = 1)
   }
@@ -2115,6 +2218,163 @@ likMSmix <- function(rho, theta, weights=(if(length(theta)==1) NULL),
   return(out)
 } # scalar
 
+# likMSmoe ----
+#' (Log-)likelihood for the MoE of Mallows models with Spearman distance
+#'
+#' @description Compute the (log-)likelihood for the parameters of a \eqn{G}-component mixture of experts of Mallow models with Spearman distance on partial rankings.
+#' Partial rankings with arbitrary missing positions are supported.
+#'
+#' @details
+#' The case with a single mixture component (\eqn{G=1}) implies that covariates are not allowed and coincides with the homogeneous Mallow models with Spearman distance. The case with multiple mixture components (\eqn{G>1}) and absence of covariates coincides with the mixture of MMS, thus the function is equivalent to \code{likMSmix}.
+#'
+#' The (log-)likelihood evaluation is performed by augmenting the partial rankings with the set of all compatible full rankings (see \code{\link{data_augmentation}}), and then the marginal likelihood is computed.
+#'
+#' When \eqn{n\leq 20}, the (log-)likelihood is exactly computed. When \eqn{n>20}, the model normalizing constant is not available and is approximated with the method introduced by Crispino et al. (2023). If \eqn{n>170}, the approximation is also restricted over a fixed grid of values for the Spearman distance to limit computational burden.
+#'
+#' @param rho Integer \eqn{G}\eqn{\times}{x}\eqn{n} matrix with the component-specific consensus rankings in each row.
+#' @param theta Numeric vector of \eqn{G} non-negative component-specific precision parameters.
+#' @param betas Numeric \eqn{G}\eqn{\times}{x}\eqn{H+1} matrix of coefficients of the GLM.
+#' @param rankings Integer \eqn{N}\eqn{\times}{x}\eqn{n} matrix or data frame with partial rankings in each row. Missing positions must be coded as \code{NA}.
+#' @param X Numeric \eqn{N}\eqn{\times}{x}\eqn{H+1} design matrix.
+#' @param log Logical: whether the log-likelihood must be returned. Defaults to \code{TRUE}.
+#'
+#' @return The (log)-likelihood value.
+#'
+#' @references
+#' Crispino M, Modugno L and Mollica C (2024+). Integrating covariates in mixtures of Mallows models with Spearman distance for analysing preference rankings.
+#'
+#' Crispino M, Mollica C and Modugno L (2024+). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
+#'
+#' Crispino M, Mollica C, Astuti V and Tardella L (2023). Efficient and accurate inference for mixtures of Mallows models with Spearman distance. \emph{Statistics and Computing}, \bold{33}(98), DOI: 10.1007/s11222-023-10266-8.
+#'
+#' @seealso \code{\link{bicMSmoe}}, \code{\link{aicMSmoe}}, \code{\link{data_augmentation}}
+#'
+#' @examples
+#'
+#' ## Example 1. Likelihood of a full ranking of n=5 items under the uniform (null) model.
+#' likMSmix(rho = 1:5, theta = 0, weights = 1, rankings = c(3,5,2,1,4), log = FALSE)
+#' # corresponds to...
+#' 1/factorial(5)
+#'
+#' ## Example 2. Simulate rankings from a 2-component mixture of Mallow models
+#' ## with Spearman distance.
+#' set.seed(12345)
+#' d_sim <- rMSmix(sample_size = 75, n_items = 8, n_clust = 2)
+#' str(d_sim)
+#' # Fit the true model.
+#' rankings <- d_sim$samples
+#' fit <- fitMSmix(rankings = rankings, n_clust = 2, n_start = 10)
+#' # Compare log-likelihood values of the true parameter values and the MLE.
+#' likMSmix(rho = d_sim$rho, theta = d_sim$theta, weights = d_sim$weights,
+#'        rankings = d_sim$samples)
+#' likMSmix(rho = fit$mod$rho, theta = fit$mod$theta, weights = fit$mod$weights,
+#'        rankings = d_sim$samples)
+#'
+#' ## Example 3. Simulate rankings from a basic Mallow model with Spearman distance.
+#' set.seed(12345)
+#' d_sim <- rMSmix(sample_size = 25, n_items = 6)
+#' str(d_sim)
+#' # Censor data to be partial top-3 rankings.
+#' rankings <- d_sim$samples
+#' rankings[rankings>3] <- NA
+#' # Fit the true model with data augmentation.
+#' set.seed(12345)
+#' fit <- fitMSmix(rankings = rankings, n_clust = 1, n_start = 10)
+#' # Compare log-likelihood values of the true parameter values and the MLEs.
+#' likMSmix(rho = d_sim$rho, theta = d_sim$theta, weights = d_sim$weights,
+#'        rankings = d_sim$samples)
+#' likMSmix(rho = fit$mod$rho, theta = fit$mod$theta, weights = fit$mod$weights,
+#'        rankings = d_sim$samples)
+#'
+#' @export
+#'
+likMSmoe <- function(rho, theta, betas, rankings, X, log = TRUE) {
+
+  # CRI COMMENTO: controllare se i check vanno bene e se vanno integrati
+  # La logica usata è: prima check sui parametri e ralazioni tra loro, poi check sui dati e relazioni tra loro,
+  # poi check su relazioni tra parametri e dati.
+
+  if (!is.matrix(rho)) {
+    stop("'rho' must be an object of class 'matrix' with multiple rows.")
+  }
+
+  if (!is_numeric_vector(theta)) {
+    stop("'theta' must be a numeric vector.")
+  }else{
+    if (any(theta < 0)) {
+      stop("The vector 'theta' must have non-negative elements.")
+    }
+  }
+
+  if (!is.matrix(betas)) {
+    stop("'betas' must be an object of class 'matrix'.")
+  }else{
+    if (!all(betas[1,]==0)) {
+      stop("The matrix 'betas' must have the first row with all entries equal to 0.")
+    }
+  }
+
+  if(!(all(nrow(rho) == length(theta), length(theta) == nrow(betas)))){
+    stop("The number of rows of 'rho' and 'betas' must be equal to the length of 'theta'.")
+  }
+
+  # CRI COMMENTO: questo check va aggiornato, perché is.vector restituisce TRUE se rankings è una lista...
+  # per ora ho evitato di farlo perché compare in milioni di punti nel codice
+  if (!is.matrix(rankings)) {
+    if (is.vector(rankings)) {
+      rankings <- matrix(rankings, nrow = 1)
+    } else {
+      rankings <- as.matrix(rankings)
+    }
+  }
+
+  if (!is.matrix(X)) {
+    stop("'X' must be an object of class 'matrix'.")
+  } else {
+    if(!all(X[,1]==1)){
+      stop("The matrix 'X' must have the first column with all entries equal to 1.")
+    }
+  }
+
+  if(nrow(rankings)!=nrow(X)){
+    stop("The matrices 'rankings' and 'X' must have the same number of rows.")
+  }
+
+  if(ncol(rankings)!=ncol(rho)){
+    stop("The matrices 'rankings' and 'rho' must have the same number of columns.")
+  }
+
+  if(ncol(X)!=ncol(betas)){
+    stop("The matrices 'X' and 'betas' must have the same number of columns.")
+  }
+
+  if(length(theta)==1 & ncol(X)>1){
+    stop("Covariates are not allowed in the case of a single mixture component.")
+  }
+
+  if (any(is.na(rankings))) {
+    rankings <- fill_single_entries_new(data = rankings)
+  }
+
+  check_na <- is.na(rankings)
+
+  if (any(rowSums(!check_na) == 0)) {
+    stop("Some rankings have all NA entries and should be removed before performing the analysis.\n")
+  }
+
+  weights <- exp(X%*%t(betas))
+  weights <- prop.table(weights, 1)
+
+  partial <- any(check_na)
+
+  if (partial) {
+    out <- lik_partialMSmoe(rho = rho, theta = theta, weights = weights, rankings = rankings, log = log)
+  } else {
+    out <- lik_completeMSmoe(rho = rho, theta = theta, weights = weights, rankings = rankings, log = log)
+  }
+
+  return(out)
+} # scalar
 
 # bicMSmix ----
 #' BIC and AIC for mixtures of Mallows models with Spearman distance
@@ -2212,6 +2472,116 @@ bicMSmix <- function(rho, theta, weights, rankings) {
   return(bic)
 }# scalar
 
+# bicMSmoe ----
+#' BIC and AIC for a MoE of Mallows models with Spearman distance
+#'
+#' @description \code{bicMSmoe} and \code{aicMSmoe} compute, respectively, the Bayesian Information Criterion (BIC) and the Akaike Information Criterion (AIC) for a \eqn{G}-component mixture of experts of Mallow models with Spearman distance fitted on partial rankings.
+#'
+#' @details
+#' The case with a single mixture component (\eqn{G=1}) implies that covariates are not allowed and coincides with the homogeneous Mallow models with Spearman distance. The case with multiple mixture components (\eqn{G>1}) and absence of covariates coincides with the mixture of MMS, thus the functions are equivalent to \code{bicMSmix} and \code{aicMSmix}.
+#'
+#' The (log-)likelihood evaluation is performed by augmenting the partial rankings with the set of all compatible full rankings (see \code{\link{data_augmentation}}), and then the marginal likelihood is computed.
+#'
+#' When \eqn{n\leq 20}, the (log-)likelihood is exactly computed, otherwise it is approximated with the method introduced by Crispino et al. (2023). If \eqn{n>170}, the approximation is also restricted over a fixed grid of values for the Spearman distance to limit computational burden.
+#'
+#' @param rho Integer \eqn{G}\eqn{\times}{x}\eqn{n} matrix with the component-specific consensus rankings in each row.
+#' @param theta Numeric vector of \eqn{G} non-negative component-specific precision parameters.
+#' @param betas Numeric \eqn{G}\eqn{\times}{x}\eqn{H+1} matrix of coefficients of the GLM.
+#' @param rankings Integer \eqn{N}\eqn{\times}{x}\eqn{n} matrix or data frame with partial rankings in each row. Missing positions must be coded as \code{NA}.
+#' @param X Numeric \eqn{N}\eqn{\times}{x}\eqn{H+1} design matrix.
+#'
+#' @return The BIC or AIC value.
+#'
+#'
+#' @references
+#' Crispino M, Modugno L and Mollica C (2024+). Integrating covariates in mixtures of Mallows models with Spearman distance for analysing preference rankings.
+#'
+#' Crispino M, Mollica C and Modugno L (2024+). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
+#'
+#' Crispino M, Mollica C, Astuti V and Tardella L (2023). Efficient and accurate inference for mixtures of Mallows models with Spearman distance. \emph{Statistics and Computing}, \bold{33}(98), DOI: 10.1007/s11222-023-10266-8.
+#'
+#' Schwarz G (1978). Estimating the dimension of a model. \emph{The Annals of Statistics}, \bold{6}(2), pages 461–464, DOI: 10.1002/sim.6224.
+#'
+#' @seealso \code{\link{likMSmoe}}, \code{\link{data_augmentation}}
+#'
+#' @examples
+#'
+#' ## Example 1. Simulate rankings from a 2-component mixture of Mallow models
+#' ## with Spearman distance.
+#' set.seed(12345)
+#' rank_sim <- rMSmix(sample_size = 50, n_items = 12, n_clust = 2)
+#' str(rank_sim)
+#' rankings <- rank_sim$samples
+#' # Fit the true model.
+#' set.seed(12345)
+#' fit <- fitMSmix(rankings = rankings, n_clust = 2, n_start = 10)
+#' # Comparing the BIC at the true parameter values and at the MLE.
+#' bicMSmix(rho = rank_sim$rho, theta = rank_sim$theta, weights = rank_sim$weights,
+#'        rankings = rank_sim$samples)
+#' bicMSmix(rho = fit$mod$rho, theta = fit$mod$theta, weights = fit$mod$weights,
+#'        rankings = rank_sim$samples)
+#' aicMSmix(rho = rank_sim$rho, theta = rank_sim$theta, weights = rank_sim$weights,
+#'        rankings = rank_sim$samples)
+#' aicMSmix(rho = fit$mod$rho, theta = fit$mod$theta, weights = fit$mod$weights,
+#'        rankings = rank_sim$samples)
+#'
+#'
+#' ## Example 2. Simulate rankings from a basic Mallow model with Spearman distance.
+#' set.seed(54321)
+#' rank_sim <- rMSmix(sample_size = 50, n_items = 8, n_clust = 1)
+#' str(rank_sim)
+#' # Let us censor the observations to be top-5 rankings.
+#' rank_sim$samples[rank_sim$samples > 5] <- NA
+#' rankings <- rank_sim$samples
+#' # Fit the true model with the two EM algorithms.
+#' set.seed(54321)
+#' fit_em <- fitMSmix(rankings = rankings, n_clust = 1, n_start = 10)
+#' set.seed(54321)
+#' fit_mcem <- fitMSmix(rankings = rankings, n_clust = 1, n_start = 10, mc_em = TRUE)
+#' # Compare the BIC at the true parameter values and at the MLEs.
+#' bicMSmix(rho = rank_sim$rho, theta = rank_sim$theta, weights = rank_sim$weights,
+#'        rankings = rank_sim$samples)
+#' bicMSmix(rho = fit_em$mod$rho, theta = fit_em$mod$theta, weights = fit_em$mod$weights,
+#'        rankings = rank_sim$samples)
+#' bicMSmix(rho = fit_mcem$mod$rho, theta = fit_mcem$mod$theta, weights = fit_mcem$mod$weights,
+#'        rankings = rank_sim$samples)
+#' aicMSmix(rho = rank_sim$rho, theta = rank_sim$theta, weights = rank_sim$weights,
+#'        rankings = rank_sim$samples)
+#' aicMSmix(rho = fit_em$mod$rho, theta = fit_em$mod$theta, weights = fit_em$mod$weights,
+#'        rankings = rank_sim$samples)
+#' aicMSmix(rho = fit_mcem$mod$rho, theta = fit_mcem$mod$theta, weights = fit_mcem$mod$weights,
+#'        rankings = rank_sim$samples)
+#'
+#' @export
+#'
+bicMSmoe <- function(rho, theta, betas, rankings, X) {
+
+  if (!is.matrix(rankings)) {
+    if (is.vector(rankings)) {
+      rankings <- matrix(rankings, nrow = 1)
+    } else {
+      rankings <- as.matrix(rankings)
+    }
+  }
+
+  if (!is.matrix(X)) {
+    stop("'X' must be an object of class 'matrix'.")
+  } else {
+    if(!all(X[,1]==1)){
+      stop("The matrix 'X' must have the first column with all entries equal to 1.")
+    }
+  }
+
+  N <- nrow(rankings)
+  n_clust <- length(theta)
+  n_coeff <- ncol(X)
+
+  max_log_lik <- likMSmoe(rho = rho, theta = theta, betas = betas, rankings = rankings, X = X)
+  bic <- -2 * max_log_lik + (2 * n_clust + n_coeff*(n_clust - 1)) * log(N)
+
+  return(bic)
+}# scalar
+
 # aicMSmix ----
 #' AIC for mixtures of Mallows models with Spearman distance
 #'
@@ -2248,6 +2618,52 @@ aicMSmix <- function(rho, theta, weights, rankings) {
   return(aic)
 }# scalar
 
+# aicMSmoe ----
+#' AIC for a MoE of Mallows models with Spearman distance
+#'
+#' @description NULL
+#'
+#'
+#' @param rho Integer \eqn{G}\eqn{\times}{x}\eqn{n} matrix with the component-specific consensus rankings in each row.
+#' @param theta Numeric vector of \eqn{G} non-negative component-specific precision parameters.
+#' @param betas Numeric \eqn{G}\eqn{\times}{x}\eqn{H+1} matrix of coefficients of the GLM.
+#' @param rankings Integer \eqn{N}\eqn{\times}{x}\eqn{n} matrix or data frame with partial rankings in each row. Missing positions must be coded as \code{NA}.
+#' @param X Numeric \eqn{N}\eqn{\times}{x}\eqn{H+1} design matrix.
+#'
+#'
+#' @references
+#' Sakamoto Y, Ishiguro M, and Kitagawa G (1986). \emph{Akaike Information Criterion Statistics}. Dordrecht, The Netherlands: D. Reidel Publishing Company.
+#'
+#' @rdname bicMSmoe
+#'
+#' @export
+#'
+aicMSmoe <- function(rho, theta, betas, rankings, X) {
+  if (!is.matrix(rankings)) {
+    if (is.vector(rankings)) {
+      rankings <- matrix(rankings, nrow = 1)
+    } else {
+      rankings <- as.matrix(rankings)
+    }
+  }
+
+  if (!is.matrix(X)) {
+    stop("'X' must be an object of class 'matrix'.")
+  } else {
+    if(!all(X[,1]==1)){
+      stop("The matrix 'X' must have the first column with all entries equal to 1.")
+    }
+  }
+
+  N <- nrow(rankings)
+  n_clust <- length(theta)
+  n_coeff <- ncol(X)
+
+  max_log_lik <- likMSmoe(rho = rho, theta = theta, betas = betas, rankings = rankings, X = X)
+  aic <- -2 * max_log_lik + (2 * n_clust + n_coeff*(n_clust - 1)) * 2
+
+  return(aic)
+}# scalar
 
 
 
@@ -2283,7 +2699,7 @@ e_step_moe <- function(rho, theta, weights, rankings, cardinalities) {
   }
 
   temp <- t(log_lik_inter_spearman(rho = rho, theta = theta, rankings = rankings,
-                                           cardinalities = cardinalities))
+                                   cardinalities = cardinalities))
 
   z <- log(weights) + temp
   z <- exp(z - apply(z, 1, max))
@@ -2320,9 +2736,10 @@ Mstep_rho <- function(amr) {
 
 
 #MMstep_weights ----
-MMstep_weights <- function(z_hat, weights, beta, X, B){
+MMstep_weights <- function(z_hat, weights, betas, X, B){
 
-  L <- ncol(X)
+  ### CRI COMMENTO: a cosa servono queste tre righe che seguono?
+  n_coeff <- ncol(X)
   n_clust <- ncol(z_hat)
   N <- nrow(z_hat)
 
@@ -2330,12 +2747,12 @@ MMstep_weights <- function(z_hat, weights, beta, X, B){
   Smatr <- t(X) %*% tmp
   Smatr[,1] <- 0
 
-  beta <- beta - t(B%*%Smatr)
+  betas <- betas - t(B%*%Smatr)
 
-  weights <- exp(X%*%t(beta))
-  weights <- weights/rowSums(weights)
+  weights <- exp(X%*%t(betas))
+  weights <- prop.table(weights,1)
 
-  return(list(weights,beta))
+  return(list(weights,betas))
 }
 
 
@@ -2497,11 +2914,11 @@ em_db_mix <- function(rankings_orig,
         }
 
         rankings[partial_rows, ] <- t(sapply(1:N_partial_rows,
-                                           function(x)ranking_completion_hide(
-                                           part_ranking = rankings_part[partial_rows[x], ],
-                                           rho = rho_star[x, ],
-                                           items_unranked = missing_entries[[x]],
-                                           n_items = n_items)))
+                                             function(x)ranking_completion_hide(
+                                               part_ranking = rankings_part[partial_rows[x], ],
+                                               rho = rho_star[x, ],
+                                               items_unranked = missing_entries[[x]],
+                                               n_items = n_items)))
 
         if (plot_log_lik_part & !inherits(aug_list, "try-error")) {
           log_lik_partial[l] <- log_lik_db_mix_partial(
@@ -2520,10 +2937,10 @@ em_db_mix <- function(rankings_orig,
         )
 
         if (plot_log_lik_part){
-        log_lik_partial[l] <- log_lik_db_mix_partial(
-          rho = rho, theta = theta, weights = weights, aug_list = aug_list, freq_part = freq_part,
-          cardinalities = cardinalities
-        )
+          log_lik_partial[l] <- log_lik_db_mix_partial(
+            rho = rho, theta = theta, weights = weights, aug_list = aug_list, freq_part = freq_part,
+            cardinalities = cardinalities
+          )
         }
       }
     }
@@ -2549,9 +2966,9 @@ em_db_mix <- function(rankings_orig,
 
   if (plot_log_lik) {
     plot(log_lik,
-      ylab = "Log-likelihood for complete data", xlab = "Iteration",
-      main = paste0(n_clust, "-component mixture of Mallows models\nwith the Spearman distance"),
-      type = "l"
+         ylab = "Log-likelihood for complete data", xlab = "Iteration",
+         main = paste0(n_clust, "-component mixture of Mallows models\nwith the Spearman distance"),
+         type = "l"
     )
 
 
@@ -2591,39 +3008,42 @@ em_db_mix <- function(rankings_orig,
 
 # em_db_moe ----
 em_db_moe <- function(#rankings_orig,
-                      rankings,
-                      X,
-                      B,
-                      item_names,
-                      freq_compl,
-                      partial,
-                      #rankings_part,
-                      #freq_part,
-                      #N_partial_rows,
-                      #partial_rows,
-                      #missing_entries,
-                      N,
-                      n_items,
-                      n_clust,
-                      n_iter = 200,
-                      theta_max = 3,
-                      init,
-                      cardinalities,
-                      eps = 10^(-6),
-                      plot_log_lik = FALSE,
-                      plot_log_lik_part = FALSE,
-                      #aug_list,
-                      #aug_mat,
-                      #aug_mat_vec,
-                      #mc_em,
-                      theta_tune,
-                      theta_tol = 1e-05) {
+  rankings,
+  X,
+  B,
+  item_names,
+  freq_compl,
+  partial,
+  #rankings_part,
+  #freq_part,
+  #N_partial_rows,
+  #partial_rows,
+  #missing_entries,
+  N,
+  n_items,
+  n_clust,
+  n_coeff,
+  n_iter = 200,
+  theta_max = 3,
+  init,
+  cardinalities,
+  eps = 10^(-6),
+  plot_log_lik = FALSE,
+  plot_log_lik_part = FALSE,
+  #aug_list,
+  #aug_mat,
+  #aug_mat_vec,
+  #mc_em,
+  theta_tune,
+  theta_tol = 1e-05) {
   rho <- init$rho
   theta <- init$theta
-  beta <- init$beta
+  betas <- init$betas
 
-  weights <- exp(X%*%t(beta))
-  weights <- round(weights/rowSums(weights),2)
+  weights <- exp(X%*%t(betas))
+  # CRI COMMENTO: non è pericoloso arrotondare che i pesi potrebbero andare
+  # più facilmente a zero? Toglierei il round.
+  weights <- round(prop.table(weights,1),2)
 
   log_lik <- rep(NA, n_iter)
   #if (plot_log_lik_part & partial & !inherits(aug_list, "try-error")) {
@@ -2633,9 +3053,14 @@ em_db_moe <- function(#rankings_orig,
   conv <- 0
   l <- 1
 
-  #if (n_clust == 1) {
-  #  z_hat <- matrix(1, nrow = length(freq_compl), ncol = n_clust)
-  #}
+  # CRI COMMENTO: per fare anche il caso MoE senza covariate e G=1 (corresponding to basic MS)
+  if (n_clust == 1) {
+    z_hat <- matrix(1, nrow = length(freq_compl), ncol = n_clust)
+    weights <- z_hat
+    betas=t(0)
+    temp_prod <- z_hat * freq_compl
+    freq_hat <- colSums(temp_prod)
+  }
 
   while (l <= n_iter) {
     if (l %% 50 == 0) {
@@ -2644,23 +3069,26 @@ em_db_moe <- function(#rankings_orig,
 
     if (n_clust > 1) {
       z_hat <- e_step_moe(rho = rho, theta = theta, weights = weights, rankings = rankings,
-                      cardinalities = cardinalities)
+                          cardinalities = cardinalities)
+      #    }
+      temp_prod <- z_hat * freq_compl
+      freq_hat <- colSums(temp_prod)
+
+      #if (n_clust == 1) {
+      #  weights <- 1
+      #} else {
+
+      #   if (n_clust > 1) {
+      mmstep <- MMstep_weights(z_hat = z_hat, weights = weights, betas = betas, X = X, B = B)
+
+      weights <- mmstep[[1]]
+      betas <- mmstep[[2]]
+      #if (max(weights) > (1 - 10^(-7)) | min(weights) < 10^(-7)) {
+      #    weights <- weights + 10^(-8)
+      #    weights <- prop.table(weights)
+      #  }
+      #}
     }
-    temp_prod <- z_hat * freq_compl
-    freq_hat <- colSums(temp_prod)
-
-    #if (n_clust == 1) {
-    #  weights <- 1
-    #} else {
-    mmstep <- MMstep_weights(z_hat = z_hat, weights = weights, beta = beta, X = X, B = B)
-
-    weights <- mmstep[[1]]
-    beta <- mmstep[[2]]
-    #if (max(weights) > (1 - 10^(-7)) | min(weights) < 10^(-7)) {
-    #    weights <- weights + 10^(-8)
-    #    weights <- prop.table(weights)
-    #  }
-    #}
 
     amr <- average_mean_ranks(rankings = rankings, temp_prod = temp_prod, freq_hat = freq_hat)
 
@@ -2740,7 +3168,7 @@ em_db_moe <- function(#rankings_orig,
 
   log_lik <- log_lik[!(is.na(log_lik))]
   best_log_lik <- log_lik[length(log_lik)]
-  bic <- -2 * best_log_lik + (2 * n_clust + (n_clust - 1)) * log(N)
+  bic <- -2 * best_log_lik + (2 * n_clust + n_coeff*(n_clust - 1)) * log(N)
 
   if (plot_log_lik) {
     plot(log_lik,
@@ -2766,7 +3194,7 @@ em_db_moe <- function(#rankings_orig,
   return(list(
     rho = rho,
     theta = theta,
-    beta = beta,
+    betas = betas,
     weights = weights,
     z_hat = z_hat,
     map_classification = NULL,
@@ -2894,21 +3322,21 @@ em_db_moe <- function(#rankings_orig,
 #' @export
 #'
 fitMSmix <- function(rankings,
-                             n_clust = 1,
-                             n_start = 1,
-                             n_iter = 200,
-                             mc_em = FALSE,
-                             eps = 10^(-6),
-                             init = list(list(rho = NULL, theta = NULL, weights = NULL))[rep(1, n_start)],
-                             plot_log_lik = FALSE,
-                             comp_log_lik_part = FALSE,
-                             plot_log_lik_part = FALSE,
-                             parallel = FALSE,
-                             theta_max = 3,
-                             theta_tol = 1e-05,
-                             theta_tune = 1,
-                             subset = NULL,
-                             item_names = NULL) {
+                     n_clust = 1,
+                     n_start = 1,
+                     n_iter = 200,
+                     mc_em = FALSE,
+                     eps = 10^(-6),
+                     init = list(list(rho = NULL, theta = NULL, weights = NULL))[rep(1, n_start)],
+                     plot_log_lik = FALSE,
+                     comp_log_lik_part = FALSE,
+                     plot_log_lik_part = FALSE,
+                     parallel = FALSE,
+                     theta_max = 3,
+                     theta_tol = 1e-05,
+                     theta_tune = 1,
+                     subset = NULL,
+                     item_names = NULL) {
 
 
   cl <- match.call()
@@ -3046,7 +3474,7 @@ fitMSmix <- function(rankings,
     }
   }
 
-    cardinalities <- suppressMessages(spear_dist_distr(n_items))
+  cardinalities <- suppressMessages(spear_dist_distr(n_items))
 
   if (!parallel) {
     mod <- vector(mode = "list", length = n_start)
@@ -3157,35 +3585,35 @@ fitMSmix <- function(rankings,
             cardinalities = cardinalities
           )
         }
-        }
+      }
 
-        tempmod <- suppressMessages(em_db_mix(
-          rankings_orig = rankings_orig,
-          rankings = rankings,
-          item_names = item_names,
-          freq_compl = freq_compl,
-          partial = partial,
-          rankings_part = rankings_part,
-          freq_part = freq_part,
-          N_partial_rows = N_partial_rows,
-          partial_rows = partial_rows,
-          missing_entries = missing_entries,
-          N = N,
-          n_items = n_items,
-          n_clust = n_clust,
-          n_iter = n_iter,
-          theta_max = theta_max,
-          init = init[[i]],
-          cardinalities = cardinalities,
-          eps = eps,
-          plot_log_lik = plot_log_lik,
-          plot_log_lik_part = plot_log_lik_part,
-          aug_list = aug_list,
-          aug_mat = aug_mat,
-          aug_mat_vec = aug_mat_vec,
-          mc_em = mc_em,
-          theta_tune = theta_tune,
-          theta_tol = theta_tol))
+      tempmod <- suppressMessages(em_db_mix(
+        rankings_orig = rankings_orig,
+        rankings = rankings,
+        item_names = item_names,
+        freq_compl = freq_compl,
+        partial = partial,
+        rankings_part = rankings_part,
+        freq_part = freq_part,
+        N_partial_rows = N_partial_rows,
+        partial_rows = partial_rows,
+        missing_entries = missing_entries,
+        N = N,
+        n_items = n_items,
+        n_clust = n_clust,
+        n_iter = n_iter,
+        theta_max = theta_max,
+        init = init[[i]],
+        cardinalities = cardinalities,
+        eps = eps,
+        plot_log_lik = plot_log_lik,
+        plot_log_lik_part = plot_log_lik_part,
+        aug_list = aug_list,
+        aug_mat = aug_mat,
+        aug_mat_vec = aug_mat_vec,
+        mc_em = mc_em,
+        theta_tune = theta_tune,
+        theta_tol = theta_tol))
 
     }
 
@@ -3203,9 +3631,9 @@ fitMSmix <- function(rankings,
     } else {
       if (!mc_em) {
         mod$z_hat <- assign_cluster_partial(rankings_part_orig = rankings_orig,
-                                        aug_list=aug_list,
-                                        aug_mat=aug_mat,
-                                        z_hat = mod$z_hat, freq_compl = mod$freq_compl)
+                                            aug_list=aug_list,
+                                            aug_mat=aug_mat,
+                                            z_hat = mod$z_hat, freq_compl = mod$freq_compl)
       }
     }
   }
@@ -3258,7 +3686,7 @@ fitMSmix <- function(rankings,
 
 
 # fitMSmoe ----
-#' MLE of mixtures of experts of Mallows models with Spearman distance via EM+MM algorithms
+#' MLE of MoE of Mallows models with Spearman distance via EMM algorithms
 #'
 #' @description
 #' Perform the MLE of mixtures of experts of Mallows model with Spearman distance on full rankings via an EM algorithm augmented with a MM step.
@@ -3269,13 +3697,13 @@ fitMSmix <- function(rankings,
 #'
 #'
 #' @param rankings Integer \eqn{N}\eqn{\times}{x}\eqn{n} matrix or data frame with partial rankings in each row. Missing positions must be coded as \code{NA}.
-#' @param X Numeric \eqn{N}\eqn{\times}{x}\eqn{L+1} design matrix with covariate profiles in each row. The first column must be the constant.
+#' @param X Numeric \eqn{N}\eqn{\times}{x}\eqn{H+1} design matrix with covariate profiles in each row. The first column must be the constant.
 #' @param n_clust Number of mixture components. Defaults to 1.
 #' @param n_start Number of starting points. Defaults to 1.
 #' @param n_iter Maximum number of EM iterations. Defaults to 200.
 #' @param mc_em Logical: whether the Monte Carlo EM algorithm must be used for MLE on partial rankings completion, see Details. Ignored when \code{rankings} does not contain any partial sequence. Defaults to \code{FALSE}.
 #' @param eps Positive tolerance value for the convergence of the EM algorithm. Defaults to \eqn{10^{-6}}.
-#' @param init List of \code{n_start} lists with the starting values of the parameters to initialize the EM algorithm. Each list must contain three named objects, namely: 1) \code{rho}: integer \eqn{G}\eqn{\times}{x}\eqn{n} matrix with the component-specific consensus rankings in each row; 2) \code{theta}: numeric vector of \eqn{G} non-negative component-specific precision parameters; 3) \code{beta}: numeric \eqn{G}\eqn{\times}{x}\eqn{L+1} matrix of regression coefficients. Defaults to \code{NULL}, meaning that the starting points are automatically generated from the uniform distribution.
+#' @param init List of \code{n_start} lists with the starting values of the parameters to initialize the EM algorithm. Each list must contain three named objects, namely: 1) \code{rho}: integer \eqn{G}\eqn{\times}{x}\eqn{n} matrix with the component-specific consensus rankings in each row; 2) \code{theta}: numeric vector of \eqn{G} non-negative component-specific precision parameters; 3) \code{betas}: numeric \eqn{G}\eqn{\times}{x}\eqn{H+1} matrix of regression coefficients. Defaults to \code{NULL}, meaning that the starting points are automatically generated from the uniform distribution.
 #' @param plot_log_lik Logical: whether the iterative log-likelihood values (based on full or augmented rankings) must be plotted. Defaults to \code{FALSE}.
 #' @param comp_log_lik_part Logical: whether the maximized observed-data log-likelihood value (based on partial rankings) must be returned. Ignored when \code{rankings} does not contain any partial sequence or \code{\link{data_augmentation}} cannot be applied. See Details. Defaults to \code{FALSE}.
 #' @param plot_log_lik_part Logical: whether the iterative observed-data log-likelihood values (based on partial rankings) must be plotted. Ignored when \code{rankings} does not contain any partial sequence. In the presence of partial rankings, this argument is ignored when \code{comp_log_lik_part = FALSE} or \code{\link{data_augmentation}} cannot be applied. Defaults to \code{FALSE}.
@@ -3287,7 +3715,7 @@ fitMSmix <- function(rankings,
 #' @param item_names Character vector for the names of the items. Defaults to \code{NULL}, meaning that \code{colnames(rankings)} is used and, if not available, \code{item_names} is set equal to \code{"Item1","Item2",...}.
 #'
 #' @return
-#' An object of class \code{"emMSmix"}, namely a list with the following named components:
+#' An object of class \code{"emMSmoe"}, namely a list with the following named components:
 #'    \describe{
 #'  \item{\code{mod}}{List of named objects describing the best fitted model in terms of maximized log-likelihood over the \code{n_start} initializations. See Details.}
 #'  \item{\code{max_log_lik}}{Maximized log-likelihood values for each initialization.}
@@ -3303,7 +3731,7 @@ fitMSmix <- function(rankings,
 #' \describe{
 #'  \item{\code{rho}}{Integer \eqn{G}\eqn{\times}{x}\eqn{n} matrix with the MLEs of the component-specific consensus rankings in each row.}
 #'  \item{\code{theta}}{Numeric vector with the MLEs of the \eqn{G} component-specific precision parameters.}
-#'  \item{\code{beta}}{Numeric matrix with the MLEs of the regression coefficients.}
+#'  \item{\code{betas}}{Numeric matrix with the MLEs of the regression coefficients.}
 #'  \item{\code{z_hat}}{Numeric \eqn{N}\eqn{\times}{x}\eqn{G} matrix of the estimated posterior component membership probabilities. Returned when \code{n_clust > 1}, otherwise \code{NULL}.}
 #'  \item{\code{map_classification}}{Integer vector of \eqn{N} mixture component memberships based on the MAP allocation from the \code{z_hat} matrix. Returned when \code{n_clust > 1}, otherwise \code{NULL}.}
 #'  \item{\code{log_lik}}{Numeric vector of the log-likelihood values (based on full or augmented rankings) at each iteration.}
@@ -3317,6 +3745,8 @@ fitMSmix <- function(rankings,
 #'  }
 #'
 #' @references
+#' Crispino M, Modugno L and Mollica C (2024+). Integrating covariates in mixtures of Mallows models with Spearman distance for analysing preference rankings.
+#'
 #' Crispino M, Mollica C and Modugno L (2024+). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
 #'
 #' Crispino M, Mollica C, Astuti V and Tardella L (2023). Efficient and accurate inference for mixtures of Mallows models with Spearman distance. \emph{Statistics and Computing}, \bold{33}(98), DOI: 10.1007/s11222-023-10266-8.
@@ -3329,7 +3759,25 @@ fitMSmix <- function(rankings,
 #' @seealso \code{\link{summary.emMSmix}}, \code{\link{plot.emMSmix}}
 #'
 #' @examples
-#' ## Example 1.
+#' ## Example 1. Fit the 3-component mixture of Mallow models with Spearman distance
+#' ## to the Antifragility dataset.
+#' r_antifrag <- ranks_antifragility[, 1:7]
+#' set.seed(123)
+#' mms_fit <- fitMSmix(rankings = r_antifrag, n_clust = 3, n_start = 10)
+#' mms_fit$mod$rho; mms_fit$mod$theta; mms_fit$mod$weights
+#'
+#' ## Example 2. Fit the Mallow model with Spearman distance
+#' ## to simulated partial rankings through data augmentation.
+#' rank_data <- rbind(c(NA, 4, NA, 1, NA), c(NA, NA, NA, NA, 1), c(2, NA, 1, NA, 3),
+#'                    c(4, 2, 3, 5, 1), c(NA, 4, 1, 3, 2))
+#' mms_fit <- fitMSmix(rankings = rank_data, n_start = 10)
+#' mms_fit$mod$rho; mms_fit$mod$theta
+#'
+#' ## Example 3. Fit the Mallow model with Spearman distance
+#' ## to the Reading genres dataset through Monte Carlo EM.
+#' top5_read <- ranks_read_genres[, 1:11]
+#' mms_fit <- fitMSmix(rankings = top5_read, n_start = 10, mc_em = TRUE)
+#' mms_fit$mod$rho; mms_fit$mod$theta
 #'
 #' @export
 #'
@@ -3340,7 +3788,7 @@ fitMSmoe <- function(rankings,
                      n_iter = 200,
                      mc_em = FALSE,
                      eps = 10^(-6),
-                     init = list(list(rho = NULL, theta = NULL, beta = NULL))[rep(1, n_start)],
+                     init = list(list(rho = NULL, theta = NULL, betas = NULL))[rep(1, n_start)],
                      plot_log_lik = FALSE,
                      comp_log_lik_part = FALSE,
                      plot_log_lik_part = FALSE,
@@ -3391,7 +3839,7 @@ fitMSmoe <- function(rankings,
   # }
 
   N <- nrow(rankings)
-  L <- ncol(X)
+  n_coeff <- ncol(X)
   B <- Bmatrix(X)
 
   rankings_orig <- rankings
@@ -3465,13 +3913,14 @@ fitMSmoe <- function(rankings,
       }
     }
 
-    if (is.null(init[[i]]$beta)) {
-      init[[i]]$beta <- (apply(matrix(runif(n_clust*L), nrow = n_clust, ncol = L), 2, sample))
-      init[[i]]$beta[1,] <- 0
+    if (is.null(init[[i]]$betas)) {
+      # init[[i]]$betas <- (apply(matrix(runif(n_clust*n_coeff), nrow = n_clust, ncol = n_coeff), 2, sample))
+      # init[[i]]$betas[1,] <- 0
+      init[[i]]$betas <- rbind(rep(0,n_coeff),matrix(rnorm((n_clust-1)*n_coeff,sd=3),n_clust-1,n_coeff))
     } else {
-      beta <- init[[i]]$beta
-      if (is.vector(beta)) {
-        init[[i]]$beta <- matrix(beta, nrow = 1)
+      betas <- init[[i]]$betas
+      if (is.vector(betas)) {
+        init[[i]]$betas <- matrix(betas, nrow = 1)
       }
     }
 
@@ -3555,6 +4004,7 @@ fitMSmoe <- function(rankings,
         N = N,
         n_items = n_items,
         n_clust = n_clust,
+        n_coeff = n_coeff,
         n_iter = n_iter,
         theta_max = theta_max,
         init = init[[i]],
@@ -3576,7 +4026,7 @@ fitMSmoe <- function(rankings,
       print(paste("Starting value #", l, " => best log-likelihood so far =", record[l]))
     }
 
-    } else {
+  } else {
 
 
     if(!("doParallel"%in%names(sessionInfo()$otherPkgs))){
@@ -3733,8 +4183,8 @@ print.emMSmix <- function(x, ...) {
   }
 
   cat("\nCall:\n", paste(deparse(emMSmix_out$call), sep = "\n", collapse = "\n"),
-    "\n\n",
-    sep = ""
+      "\n\n",
+      sep = ""
   )
   n_items <- ncol(emMSmix_out$mod$rho)
   n_clust <- length(emMSmix_out$mod$weights)
@@ -3850,8 +4300,8 @@ print.summary.emMSmix <- function(x, ...) {
   }
 
   cat("\nCall:\n", paste(deparse(summary.emMSmix_out$call), sep = "\n", collapse = "\n"),
-    "\n\n",
-    sep = ""
+      "\n\n",
+      sep = ""
   )
   cat("-----------------------------\n")
   cat("--- MLE of the parameters ---\n")
@@ -4076,12 +4526,12 @@ plot.emMSmix <- function(x, max_scale_w = 20, mar_lr = 0.4, mar_tb = 0.2, ...) {
 #' @export
 #'
 bootstrapMSmix <- function(object,
-                         n_boot = 50,
-                         type = (if(object$em_settings$n_clust == 1) "non-parametric" else "soft"),
-                         conf_level = 0.95,
-                         all = FALSE,
-                         n_start = 10,
-                         parallel = FALSE) {
+                           n_boot = 50,
+                           type = (if(object$em_settings$n_clust == 1) "non-parametric" else "soft"),
+                           conf_level = 0.95,
+                           all = FALSE,
+                           n_start = 10,
+                           parallel = FALSE) {
 
   emMSmix_out <- object
 
@@ -4122,7 +4572,7 @@ bootstrapMSmix <- function(object,
       n_iter = n_iter,
       eps = eps,
       theta_tol = theta_tol
-      )
+    )
 
   } else {
     out <- hetero_bootstrapMSmix(
@@ -4183,10 +4633,10 @@ bootstrapMSmix <- function(object,
   }
 
   out_boot <- list(itemwise_ci_rho = ci_rho,
-              ci_boot_theta = ci_theta,
-              ci_boot_weights = ci_weights,
-              conf_level = conf_level,
-              boot = (if (all) out else NULL))
+                   ci_boot_theta = ci_theta,
+                   ci_boot_weights = ci_weights,
+                   conf_level = conf_level,
+                   boot = (if (all) out else NULL))
 
   class(out_boot) <- "bootMSmix"
 
@@ -4198,19 +4648,19 @@ bootstrapMSmix <- function(object,
 
 # homo_bootstrapMSmix ----
 homo_bootstrapMSmix <- function(rankings,
-                              n_boot,
-                              type,
-                              rho_mle,
-                              theta_mle,
-                              n_start,
-                              mc_em,
-                              item_names,
-                              parallel,
-                              theta_max,
-                              theta_tune,
-                              n_iter,
-                              eps,
-                              theta_tol) {
+                                n_boot,
+                                type,
+                                rho_mle,
+                                theta_mle,
+                                n_start,
+                                mc_em,
+                                item_names,
+                                parallel,
+                                theta_max,
+                                theta_tune,
+                                n_iter,
+                                eps,
+                                theta_tol) {
 
 
   if (!(type%in%c("parametric","non-parametric"))){
@@ -4301,19 +4751,19 @@ homo_bootstrapMSmix <- function(rankings,
 
 # hetero_bootstrapMSmix ----
 hetero_bootstrapMSmix <- function(rankings,
-                                n_boot,
-                                type,
-                                z_hat,
-                                classification,
-                                n_start,
-                                mc_em,
-                                item_names,
-                                parallel,
-                                theta_max,
-                                theta_tune,
-                                n_iter,
-                                eps,
-                                theta_tol) {
+                                  n_boot,
+                                  type,
+                                  z_hat,
+                                  classification,
+                                  n_start,
+                                  mc_em,
+                                  item_names,
+                                  parallel,
+                                  theta_max,
+                                  theta_tune,
+                                  n_iter,
+                                  eps,
+                                  theta_tol) {
 
 
   if (!(type%in%c("soft","separated"))){
@@ -4405,7 +4855,7 @@ hetero_bootstrapMSmix <- function(rankings,
             n_iter = n_iter,
             eps = eps,
             theta_tol = theta_tol
-            ))
+          ))
           rho_boot[[g]][h, ] <- FIT$mod$rho
           theta_boot[h, g] <- FIT$mod$theta
         } else {
@@ -4596,23 +5046,23 @@ plot.bootMSmix <- function(x, ...) {
         dy2 <-c(dy2,den2[[g]]$y)
       }
 
-    oldpar5 <- par(mar=rep(4,4))
-    on.exit(par(oldpar5))
-    ramp <- colorRamp(c("darkblue","darkgreen","yellow"))
-    ramp2 <- rgb( ramp(seq(0, 1, length.out = n_clust)), maxColorValue = 255)
-    plot(den2[[1]], lwd = 2,
-         col = ramp2[1],ylim=range(dy2),xlim=range(dx2),
-         main = "Bootstrap MLEs of the mixture weights",
-         xlab = "weights", ylab = "Density")
-    polygon(den2[[1]], col = adjustcolor(ramp2[1],0.5))
-    for(g in 2:n_clust){
-      lines(den2[[g]], lwd = 2, col = ramp2[g])
-      polygon(den2[[g]], col = adjustcolor(ramp2[g],0.5))
-    }
-    legend('topright',legend=(1:n_clust),title='Component',
-           fill=adjustcolor(ramp2,0.5),bty='n')
+      oldpar5 <- par(mar=rep(4,4))
+      on.exit(par(oldpar5))
+      ramp <- colorRamp(c("darkblue","darkgreen","yellow"))
+      ramp2 <- rgb( ramp(seq(0, 1, length.out = n_clust)), maxColorValue = 255)
+      plot(den2[[1]], lwd = 2,
+           col = ramp2[1],ylim=range(dy2),xlim=range(dx2),
+           main = "Bootstrap MLEs of the mixture weights",
+           xlab = "weights", ylab = "Density")
+      polygon(den2[[1]], col = adjustcolor(ramp2[1],0.5))
+      for(g in 2:n_clust){
+        lines(den2[[g]], lwd = 2, col = ramp2[g])
+        polygon(den2[[g]], col = adjustcolor(ramp2[g],0.5))
+      }
+      legend('topright',legend=(1:n_clust),title='Component',
+             fill=adjustcolor(ramp2,0.5),bty='n')
 
-}
+    }
 
   }
 
