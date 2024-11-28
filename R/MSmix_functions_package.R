@@ -62,8 +62,6 @@ assign_cluster <- function(rankings_orig, z_hat) {
   return(z_hat_orig)
 }
 
-
-
 # assign_cluster_partial ----
 assign_cluster_partial <- function(rankings_part_orig,
                                    aug_list,
@@ -137,6 +135,30 @@ assign_cluster_partial <- function(rankings_part_orig,
   }
 
   return(z_hat_orig)
+}
+
+assign_cluster_partial_moe <- function(
+                                   aug_list,
+                                   z_hat,
+                                   freq_compl) {
+
+  n_clust <- ncol(z_hat)
+  Nstar <- length(aug_list)
+  z_rid <- matrix(NA, ncol=n_clust, nrow= Nstar)
+  tmp <- z_hat
+  tmp2 <- freq_compl
+
+  for (j in 1:Nstar) {
+    quanti <- nrow(aug_list[[j]])
+    zj <- tmp[1:quanti,,drop=FALSE]
+    fj <- tmp2[1:quanti]
+    prodotto <- zj * fj
+    z_rid[j, ] <- prop.table(colMeans(prodotto))
+    tmp <- tmp[-c(1:quanti), ,drop=FALSE]
+    tmp2 <- tmp2[-c(1:quanti)]
+  }
+
+  return(z_rid)
 }
 
 
@@ -1014,9 +1036,7 @@ rMSmoe <- function(n_items,
   }
 
   Probs <- exp(X%*%t(betas))
-  # CRI COMMENTO: non è pericoloso arrotondare che i pesi potrebbero andare
-  # più facilmente a zero? Toglierei il round.
-  Probs <- round(prop.table(Probs,1),2)
+  Probs <- prop.table(Probs,1)
   class <- apply(Probs, 1, function(x)sample(x = 1:n_clust, size = 1, prob = x))
   table_class <- tabulate(class, nbins = n_clust)
   data_sim <- NULL
@@ -1806,6 +1826,33 @@ estn <- function(theta, rho, weights,
     logcardest <- cardinalities$logcard
     logZ <- sapply(theta, log_part_funct_spear_hide, distances = distances, logcardest = logcardest)
     nhat_tmp <- unlist(lapply(1:N, function(x) f2_estn(aug_list[[x]], freq_part[x],rho,theta,weights,logZ)))
+  }
+
+  aug_data_table <- data.table(amv=aug_mat_vec, nhat_tmp = nhat_tmp)
+  freq_compl_est <- aug_data_table[, .(nhat = sum(nhat_tmp)), by = amv]
+  names(freq_compl_est)[1 + 1] <- "nhat"
+  freq_compl_est <- freq_compl_est$nhat
+
+  return(freq_compl_est)
+}
+
+
+estn_moe <- function(theta, rho, weights,
+                 aug_list, aug_mat, aug_mat_vec,
+                 freq_part, cardinalities) {
+
+  N <- length(aug_list)
+  n_clust <- length(theta)
+  n_items <- ncol(aug_mat)
+
+  if (n_clust == 1) {
+    nhat_tmp <- unlist(lapply(1:N, function(x) f1_estn(aug_list[[x]], freq_part[x],rho,theta)))
+  } else {
+    distances <- cardinalities$distances
+    logcardest <- cardinalities$logcard
+    logZ <- sapply(theta, log_part_funct_spear_hide, distances = distances, logcardest = logcardest)
+    nhat_tmp <- unlist(lapply(1:N, function(x) f2_estn(aug_list[[x]], freq_part[x],rho,theta,
+                                                       weights=weights[x,],logZ)))
   }
 
   aug_data_table <- data.table(amv=aug_mat_vec, nhat_tmp = nhat_tmp)
@@ -2738,11 +2785,6 @@ Mstep_rho <- function(amr) {
 #MMstep_weights ----
 MMstep_weights <- function(z_hat, weights, betas, X, B){
 
-  ### CRI COMMENTO: a cosa servono queste tre righe che seguono?
-  n_coeff <- ncol(X)
-  n_clust <- ncol(z_hat)
-  N <- nrow(z_hat)
-
   tmp <- z_hat - weights
   Smatr <- t(X) %*% tmp
   Smatr[,1] <- 0
@@ -3007,18 +3049,18 @@ em_db_mix <- function(rankings_orig,
 
 
 # em_db_moe ----
-em_db_moe <- function(#rankings_orig,
+em_db_moe <- function(rankings_orig,
   rankings,
   X,
   B,
   item_names,
   freq_compl,
   partial,
-  #rankings_part,
-  #freq_part,
-  #N_partial_rows,
-  #partial_rows,
-  #missing_entries,
+  rankings_part,
+  freq_part,
+  N_partial_rows,
+  partial_rows,
+  missing_entries,
   N,
   n_items,
   n_clust,
@@ -3030,25 +3072,24 @@ em_db_moe <- function(#rankings_orig,
   eps = 10^(-6),
   plot_log_lik = FALSE,
   plot_log_lik_part = FALSE,
-  #aug_list,
-  #aug_mat,
-  #aug_mat_vec,
-  #mc_em,
+  aug_list,
+  aug_mat,
+  aug_mat_vec,
+  mc_em,
   theta_tune,
   theta_tol = 1e-05) {
+
   rho <- init$rho
   theta <- init$theta
   betas <- init$betas
 
   weights <- exp(X%*%t(betas))
-  # CRI COMMENTO: non è pericoloso arrotondare che i pesi potrebbero andare
-  # più facilmente a zero? Toglierei il round.
-  weights <- round(prop.table(weights,1),2)
+  weights <- prop.table(weights,1)
 
   log_lik <- rep(NA, n_iter)
-  #if (plot_log_lik_part & partial & !inherits(aug_list, "try-error")) {
-  #  log_lik_partial <- rep(NA, n_iter)
-  #}
+  if (plot_log_lik_part & partial & !inherits(aug_list, "try-error")) {
+    log_lik_partial <- rep(NA, n_iter)
+  }
 
   conv <- 0
   l <- 1
@@ -3068,26 +3109,26 @@ em_db_moe <- function(#rankings_orig,
     }
 
     if (n_clust > 1) {
-      z_hat <- e_step_moe(rho = rho, theta = theta, weights = weights, rankings = rankings,
+      z_hat <- e_step_moe(rho = rho, theta = theta, weights = weights,
+                          rankings = rankings,
                           cardinalities = cardinalities)
-      #    }
       temp_prod <- z_hat * freq_compl
       freq_hat <- colSums(temp_prod)
 
-      #if (n_clust == 1) {
-      #  weights <- 1
-      #} else {
+      tmp_w <- weights
+      tmp_beta <- betas
 
-      #   if (n_clust > 1) {
-      mmstep <- MMstep_weights(z_hat = z_hat, weights = weights, betas = betas, X = X, B = B)
+      for(m in 1:5){### MARTA: questo loop serve per convergenza(5 è ok?)
+      mmstep <- MMstep_weights(z_hat = z_hat, weights = tmp_w,
+                               betas = tmp_beta, X = X, B = B)
+      tmp_w <- mmstep[[1]]
+      tmp_beta <- mmstep[[2]]
 
-      weights <- mmstep[[1]]
-      betas <- mmstep[[2]]
-      #if (max(weights) > (1 - 10^(-7)) | min(weights) < 10^(-7)) {
-      #    weights <- weights + 10^(-8)
-      #    weights <- prop.table(weights)
-      #  }
-      #}
+      }
+
+      weights <- tmp_w
+      betas <- tmp_beta
+
     }
 
     amr <- average_mean_ranks(rankings = rankings, temp_prod = temp_prod, freq_hat = freq_hat)
@@ -3097,59 +3138,59 @@ em_db_moe <- function(#rankings_orig,
     theta <- Mstep_theta(theta_max = theta_max, n_items = n_items, rhs = rhs,
                          cardinalities = cardinalities, theta_tol = theta_tol)
 
-    # if (partial) {
-    #   if (mc_em) {
-    #     if (n_clust == 1) {
-    #       rho_star <- suppressMessages(rMSmix(
-    #         sample_size = N_partial_rows, n_items = n_items,
-    #         n_clust = n_clust, rho = rho,
-    #         theta = theta_tune*theta
-    #       )$samples)
-    #     } else {
-    #       rho_star <- matrix(NA, nrow = N_partial_rows, ncol = n_items)
-    #       z_hat_part <- z_hat[partial_rows, , drop = FALSE]
-    #       c_tmp <- apply(z_hat_part, 1, sample, size = 1, x = 1:n_clust, replace = TRUE)
-    #       for (cc in 1:n_clust) {
-    #         quanti <- sum(c_tmp == cc)
-    #         quali <- which(c_tmp == cc)
-    #         rho_star[quali, ] <- suppressMessages(rMSmix(
-    #           sample_size = quanti, n_items = n_items,
-    #           n_clust = 1, rho = rho[cc, ],
-    #           theta = theta_tune*theta[cc])$samples)
-    #       }
-    #     }
-    #
-    #     rankings[partial_rows, ] <- t(sapply(1:N_partial_rows,
-    #                                          function(x)ranking_completion_hide(
-    #                                            part_ranking = rankings_part[partial_rows[x], ],
-    #                                            rho = rho_star[x, ],
-    #                                            items_unranked = missing_entries[[x]],
-    #                                            n_items = n_items)))
-    #
-    #     if (plot_log_lik_part & !inherits(aug_list, "try-error")) {
-    #       log_lik_partial[l] <- log_lik_db_mix_partial(
-    #         rho = rho, theta = theta, weights = weights,
-    #         aug_list = aug_list, freq_part = freq_part,
-    #         cardinalities = cardinalities
-    #       )
-    #     }
-    #   } else {
-    #     freq_compl <- estn(
-    #       theta = theta, rho = rho, weights = weights,
-    #       aug_list = aug_list, aug_mat = aug_mat,
-    #       aug_mat_vec = aug_mat_vec,
-    #       freq_part = freq_part,
-    #       cardinalities = cardinalities
-    #     )
-    #
-    #     if (plot_log_lik_part){
-    #       log_lik_partial[l] <- log_lik_db_mix_partial(
-    #         rho = rho, theta = theta, weights = weights, aug_list = aug_list, freq_part = freq_part,
-    #         cardinalities = cardinalities
-    #       )
-    #     }
-    #   }
-    # }
+    if (partial) {
+      if (mc_em) {
+        if (n_clust == 1) {
+          rho_star <- suppressMessages(rMSmix(
+            sample_size = N_partial_rows, n_items = n_items,
+            n_clust = n_clust, rho = rho,
+            theta = theta_tune*theta
+          )$samples)
+        } else {
+          rho_star <- matrix(NA, nrow = N_partial_rows, ncol = n_items)
+          z_hat_part <- z_hat[partial_rows, , drop = FALSE]
+          c_tmp <- apply(z_hat_part, 1, sample, size = 1, x = 1:n_clust, replace = TRUE)
+          for (cc in 1:n_clust) {
+            quanti <- sum(c_tmp == cc)
+            quali <- which(c_tmp == cc)
+            rho_star[quali, ] <- suppressMessages(rMSmix(
+              sample_size = quanti, n_items = n_items,
+              n_clust = 1, rho = rho[cc, ],
+              theta = theta_tune*theta[cc])$samples)
+          }
+        }
+
+        rankings[partial_rows, ] <- t(sapply(1:N_partial_rows,
+                                             function(x)ranking_completion_hide(
+                                               part_ranking = rankings_part[partial_rows[x], ],
+                                               rho = rho_star[x, ],
+                                               items_unranked = missing_entries[[x]],
+                                               n_items = n_items)))
+
+        if (plot_log_lik_part & !inherits(aug_list, "try-error")) {
+          log_lik_partial[l] <- log_lik_db_moe_partial(
+            rho = rho, theta = theta, weights = weights,
+            aug_list = aug_list, freq_part = freq_part,
+            cardinalities = cardinalities
+          )
+        }
+      } else {
+        freq_compl <- estn_moe(
+          theta = theta, rho = rho, weights = weights,
+          aug_list = aug_list, aug_mat = aug_mat,
+          aug_mat_vec = aug_mat_vec,
+          freq_part = freq_part,
+          cardinalities = cardinalities
+        )
+
+        if (plot_log_lik_part){
+          log_lik_partial[l] <- log_lik_db_moe_partial(
+            rho = rho, theta = theta, weights = weights, aug_list = aug_list, freq_part = freq_part,
+            cardinalities = cardinalities
+          )
+        }
+      }
+    }
 
     log_lik[l] <- log_lik_db_moe(
       rho = rho, theta = theta, weights = weights, rankings = rankings, freq_compl = freq_compl,
@@ -3180,14 +3221,14 @@ em_db_moe <- function(#rankings_orig,
 
   }
 
-  # if (plot_log_lik_part & partial & !inherits(aug_list, "try-error")) {
-  #   log_lik_partial <- log_lik_partial[!(is.na(log_lik_partial))]
-  #   plot(log_lik_partial,
-  #        ylab = "Log-likelihood for partial data", xlab = "Iteration",
-  #        main = paste0(n_clust, "-component mixture of Mallows models\nwith the Spearman distance"),
-  #        type = "l"
-  #   )
-  # }
+  if (plot_log_lik_part & partial & !inherits(aug_list, "try-error")) {
+    log_lik_partial <- log_lik_partial[!(is.na(log_lik_partial))]
+    plot(log_lik_partial,
+         ylab = "Log-likelihood for partial data", xlab = "Iteration",
+         main = paste0(n_clust, "-component mixture of Mallows models\nwith the Spearman distance"),
+         type = "l"
+    )
+  }
 
   colnames(rho) <- item_names
 
@@ -3195,23 +3236,20 @@ em_db_moe <- function(#rankings_orig,
     rho = rho,
     theta = theta,
     betas = betas,
-    weights = weights,
+    #weights = weights,
     z_hat = z_hat,
     map_classification = NULL,
     freq_compl = freq_compl,
     log_lik = log_lik,
     best_log_lik = best_log_lik,
     bic = bic,
-    #log_lik_part = (if (plot_log_lik_part & partial & !inherits(aug_list, "try-error")) log_lik_partial else NULL),
-    #best_log_lik_part = NULL,
-    #bic_part = NULL,
-    conv = conv#,
-    #augmented_rankings = (if (partial & mc_em) rankings else NULL)
+    log_lik_part = (if (plot_log_lik_part & partial & !inherits(aug_list, "try-error")) log_lik_partial else NULL),
+    best_log_lik_part = NULL,
+    bic_part = NULL,
+    conv = conv,
+    augmented_rankings = (if (partial & mc_em) rankings else NULL)
   ))
 }
-
-
-
 
 
 
@@ -3654,9 +3692,9 @@ fitMSmix <- function(rankings,
     mod$bic_part <- -2 * mod$best_log_lik_part + (2 * n_clust + (n_clust - 1)) * log(N)
   }
 
-  # if (!is.null(mod$augmented_rankings)){
-  #   dimnames(mod$augmented_rankings) = list(NULL, item_names)
-  # }
+  if (!is.null(mod$augmented_rankings)){
+     dimnames(mod$augmented_rankings) = list(NULL, item_names)
+  }
 
 
   em_settings <- list(rankings = rankings_orig,
@@ -3689,14 +3727,16 @@ fitMSmix <- function(rankings,
 #' MLE of MoE of Mallows models with Spearman distance via EMM algorithms
 #'
 #' @description
-#' Perform the MLE of mixtures of experts of Mallows model with Spearman distance on full rankings via an EM algorithm augmented with a MM step.
+#' Perform the MLE of mixtures of experts of Mallows model with Spearman distance
+#' on full rankings via an EM algorithm augmented with a MM step.
 #'
 #' @details
 #' The EM algorithms are launched from \code{n_start} initializations and the best solution in terms of maximized
 #' log-likelihood value (based on full or augmented rankings) is returned.
 #'
 #'
-#' @param rankings Integer \eqn{N}\eqn{\times}{x}\eqn{n} matrix or data frame with partial rankings in each row. Missing positions must be coded as \code{NA}.
+#' @param rankings Integer \eqn{N}\eqn{\times}{x}\eqn{n} matrix or data frame
+#' with partial rankings in each row. Missing positions must be coded as \code{NA}.
 #' @param X Numeric \eqn{N}\eqn{\times}{x}\eqn{H+1} design matrix with covariate profiles in each row. The first column must be the constant.
 #' @param n_clust Number of mixture components. Defaults to 1.
 #' @param n_start Number of starting points. Defaults to 1.
@@ -3745,7 +3785,7 @@ fitMSmix <- function(rankings,
 #'  }
 #'
 #' @references
-#' Crispino M, Modugno L and Mollica C (2024+). Integrating covariates in mixtures of Mallows models with Spearman distance for analysing preference rankings.
+#' Crispino M, Modugno L and Mollica C (2024+). Integrating covariates in mixtures of Mallows models with Spearman distance for analyzing preference rankings.
 #'
 #' Crispino M, Mollica C and Modugno L (2024+). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
 #'
@@ -3781,6 +3821,7 @@ fitMSmix <- function(rankings,
 #'
 #' @export
 #'
+
 fitMSmoe <- function(rankings,
                      X,
                      n_clust = 2,
@@ -3830,19 +3871,30 @@ fitMSmoe <- function(rankings,
     colnames(rankings) <- item_names
   }
 
-  #aug_list <- aug_mat <- freq_part <- rankings_part <- N_partial_rows <- partial_rows <- missing_entries <- NULL
+  aug_list <- aug_mat <- freq_part <- rankings_part <- N_partial_rows <- partial_rows <- missing_entries <- NULL
 
-  #aug_mat_vec = NULL
+  aug_mat_vec = NULL
 
-  # if (any(is.na(rankings))) {
-  #   rankings <- suppressWarnings(fill_single_entries_new(data = rankings))
-  # }
+   if (any(is.na(rankings))) {
+   rankings <- suppressWarnings(fill_single_entries_new(data = rankings))
+   }
 
   N <- nrow(rankings)
+
+  # MARTA mancano controlli su X
+  if (!is.matrix(X)) {
+    stop("'X' must be an object of class 'matrix'.")
+  } else {
+    if(!all(X[,1]==1)){
+      stop("The matrix 'X' must have the first column with all entries equal to 1.")
+    }
+  }
+
   n_coeff <- ncol(X)
   B <- Bmatrix(X)
 
   rankings_orig <- rankings
+  X_orig <- X
   check_na <- is.na(rankings)
 
   if (any(rowSums(!check_na) == 0)) {
@@ -3874,7 +3926,8 @@ fitMSmoe <- function(rankings,
       if (is.matrix(missing_entries)) {
         missing_entries <- as.data.frame(missing_entries)
       }
-    } else {
+    }
+    else {
       message("The dataset includes partial rankings. Estimation method ------> EM ALGORITHM ON AUGMENTED RANKINGS proposed by Crispino et al. (2023).\n")
 
       quanti_na <- rowSums(check_na)
@@ -3887,23 +3940,34 @@ fitMSmoe <- function(rankings,
         }
       }
 
-      uniranks <- frequence(rankings)
-      freq_part <- uniranks[, n_items + 1]
-      rankings_part <- uniranks[, 1:n_items, drop = FALSE]
+      freq_part <- rep(1,N)
+      rankings_part <- rankings
+      X_orig <- X
+
       aug_list <- try(quiet(data_augmentation(rankings_part, fill_single_na = FALSE)), silent = TRUE)
-      aug_mat <- do.call(rbind, aug_list)
-      aug_mat_vec = apply(aug_mat,1,paste0,sep="-",collapse="")
-      rankings <- unique(aug_mat)
+
+      aug_list_X <- list()
+      for(j in 1:N){
+        tmp <- nrow(aug_list[[j]])
+        aug_list_X[[j]]<-cbind(aug_list[[j]],
+                               matrix(rep(X[j,], each=tmp),nrow=tmp,ncol=ncol(X)))
+        }
+
+      aug_mat <- do.call(rbind, aug_list_X)
+      aug_mat_vec <- apply(aug_mat,1,paste0,sep="-",collapse="")
+      rankings <- aug_mat[,1:n_items]
+      X <- aug_mat[,(n_items+1):(n_items+ncol(X))]
+      B <- Bmatrix(X)
     }
   } else {
     message("The dataset includes only full rankings. Estimation method ------> EM ALGORITHM.\n")
-
     freq_compl <- rep(1,N)
     rankings <- rankings
   }
 
 
   for (i in 1:n_start) {
+    #RHO
     if (is.null(init[[i]]$rho)) {
       init[[i]]$rho <- t(apply(matrix(1:n_items, nrow = n_items, ncol = n_clust), 2, sample))
     } else {
@@ -3913,10 +3977,10 @@ fitMSmoe <- function(rankings,
       }
     }
 
+    #BETA
     if (is.null(init[[i]]$betas)) {
-      # init[[i]]$betas <- (apply(matrix(runif(n_clust*n_coeff), nrow = n_clust, ncol = n_coeff), 2, sample))
-      # init[[i]]$betas[1,] <- 0
-      init[[i]]$betas <- rbind(rep(0,n_coeff),matrix(rnorm((n_clust-1)*n_coeff,sd=3),n_clust-1,n_coeff))
+      init[[i]]$betas <- rbind(rep(0,n_coeff),
+                               matrix(rnorm((n_clust-1)*n_coeff,sd=3),n_clust-1,n_coeff))
     } else {
       betas <- init[[i]]$betas
       if (is.vector(betas)) {
@@ -3924,20 +3988,11 @@ fitMSmoe <- function(rankings,
       }
     }
 
-    # if (is.null(init[[i]]$weights)) {
-    #   init[[i]]$weights <- as.vector(rdirichlet(1, rep(n_clust * 2, n_clust)))
-    # } else {
-    #   weights <- init[[i]]$weights
-    #   if (any(weights <= 0)) {
-    #     stop("Mixture weights must be positive")
-    #   } else {
-    #     if (sum(weights) != 1) {
-    #       weights <- prop.table(weights)
-    #       warning("Mixture weights have been normalized to sum up to one")
-    #     }
-    #   }
-    # }
+    # WEIGHTS
+    pesi <- exp(X%*%t(init[[i]]$betas))
+    pesi <- prop.table(pesi,1)
 
+    # THETA
     if (is.null(init[[i]]$theta)) {
       init[[i]]$theta <- runif(n = n_clust, min = 0, max = 1)
     } else {
@@ -3964,11 +4019,13 @@ fitMSmoe <- function(rankings,
 
       if (partial) {
         if (mc_em) {
-          rho_star <- suppressMessages(rMSmix(
-            sample_size = N_partial_rows, n_items = n_items,
-            n_clust = n_clust, rho = init[[i]]$rho,
-            theta = init[[i]]$theta, weights = init[[i]]$weights
-          )$samples)
+          rho_star <- suppressMessages(rMSmoe(
+            n_items = n_items,
+            n_clust = n_clust,
+            X = X,
+            rho = init[[i]]$rho,
+            theta = init[[i]]$theta,
+            betas = init[[i]]$betas)$samples)
 
 
           rankings[partial_rows, ] <- t(sapply(1:N_partial_rows,
@@ -3979,8 +4036,9 @@ fitMSmoe <- function(rankings,
                                                  n_items = n_items)))
 
         } else {
-          freq_compl <- estn(
-            theta = init[[i]]$theta, rho = init[[i]]$rho, weights = init[[i]]$weights,
+
+          freq_compl <- estn_moe(
+            theta = init[[i]]$theta, rho = init[[i]]$rho, weights = pesi,
             aug_list = aug_list, aug_mat = aug_mat,
             aug_mat_vec = aug_mat_vec,
             freq_part = freq_part,
@@ -3989,18 +4047,18 @@ fitMSmoe <- function(rankings,
         }
       }
 
-      mod[[l]] <- em_db_moe(#rankings_orig,
+      mod[[l]] <- em_db_moe(rankings_orig,
         rankings = rankings,
         X = X,
         B = B,
         item_names = item_names,
         freq_compl = freq_compl,
         partial = partial,
-        #rankings_part,
-        #freq_part,
-        #N_partial_rows,
-        #partial_rows,
-        #missing_entries,
+        rankings_part,
+        freq_part,
+        N_partial_rows,
+        partial_rows,
+        missing_entries,
         N = N,
         n_items = n_items,
         n_clust = n_clust,
@@ -4011,11 +4069,11 @@ fitMSmoe <- function(rankings,
         cardinalities = cardinalities,
         eps = eps,
         plot_log_lik = plot_log_lik,
-        #plot_log_lik_part = FALSE,
-        #aug_list,
-        #aug_mat,
-        #aug_mat_vec,
-        #mc_em,
+        plot_log_lik_part = FALSE,
+        aug_list,
+        aug_mat,
+        aug_mat_vec,
+        mc_em,
         theta_tune = theta_tune,
         theta_tol = theta_tol)
 
@@ -4103,50 +4161,53 @@ fitMSmoe <- function(rankings,
 
   mod <- mod[[which.max(max_log_lik)]]
 
-  # if (n_clust > 1) {
-  #   if (!partial) {
-  #     mod$z_hat <- assign_cluster(rankings_orig = rankings_orig, z_hat = mod$z_hat)
-  #   } else {
-  #     if (!mc_em) {
-  #       mod$z_hat <- assign_cluster_partial(rankings_part_orig = rankings_orig,
-  #                                           aug_list=aug_list,
-  #                                           aug_mat=aug_mat,
-  #                                           z_hat = mod$z_hat, freq_compl = mod$freq_compl)
-  #     }
-  #   }
-  # }
+  if (n_clust > 1) {
+    if(partial){
+      if (!mc_em) {
+        mod$z_hat <- assign_cluster_partial_moe(aug_list = aug_list,
+                                                z_hat = mod$z_hat,
+                                                freq_compl = mod$freq_compl)
+      }
+    }
+  }
 
-  mod$freq_compl=NULL
+  mod$freq_compl = NULL
 
 
   if (n_clust > 1){
-    mod$map_classification = apply(mod$z_hat, 1, which.max)
+   mod$map_classification <- apply(mod$z_hat, 1, which.max)
   }
 
-  # if (partial & comp_log_lik_part & !inherits(aug_list, "try-error")) {
-  #   mod$best_log_lik_part <- log_lik_db_mix_partial(
-  #     rho = mod$rho, theta = mod$theta, weights = mod$weights,
-  #     aug_list = aug_list, freq_part = freq_part,
-  #     cardinalities = cardinalities
-  #   )
-  #   mod$bic_part <- -2 * mod$best_log_lik_part + (2 * n_clust + (n_clust - 1)) * log(N)
-  # }
+  if (partial & comp_log_lik_part & !inherits(aug_list, "try-error")) {
+    pesi <- exp(X%*%t(mod$betas))
+    pesi <- prop.table(pesi,1)
 
-  # if (!is.null(mod$augmented_rankings)){
-  #   dimnames(mod$augmented_rankings) = list(NULL, item_names)
-  # }
+     mod$best_log_lik_part <- log_lik_db_moe_partial(
+       rho = mod$rho, theta = mod$theta, weights = pesi,
+       aug_list = aug_list, freq_part = freq_part,
+       cardinalities = cardinalities
+     )
+     mod$bic_part <- -2 * mod$best_log_lik_part + (2 * n_clust + n_coeff*(n_clust - 1)) * log(N)
+   }
+
+
+   if (!is.null(mod$augmented_rankings)){
+     dimnames(mod$augmented_rankings) = list(NULL, item_names)
+   }
 
 
   em_settings <- list(rankings = rankings_orig,
+                      X = X_orig,
                       n_clust = n_clust,
                       n_iter = n_iter,
-                      #mc_em = mc_em,
+                      mc_em = mc_em,
                       eps = eps,
                       theta_tol = theta_tol,
                       theta_max = theta_max,
                       theta_tune = theta_tune)
 
-  out <- list(mod = mod, max_log_lik = max_log_lik, partial_data = partial,
+  out <- list(mod = mod, max_log_lik = max_log_lik,
+              partial_data = partial,
               convergence = convergence, record = record,
               em_settings = em_settings, call = cl)
 
@@ -4158,8 +4219,6 @@ fitMSmoe <- function(rankings,
 
   return(out)
 }
-
-
 
 # print.emMSmix ----
 #' Print of the EM algorithm for the mixture of Mallows models with Spearman distance
