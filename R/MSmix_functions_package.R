@@ -33,7 +33,14 @@ is_numeric_vector <- function(xx) {
   is.numeric(xx) && is.atomic(xx)
 }
 
-# B_matrix ----
+
+# order_beta
+order_beta <- function(betas,ref_clust){
+  return(t(t(betas)-betas[ref_clust,]))
+}
+
+
+# Bmatrix ----
 Bmatrix <- function(X) {
   sumx <- t(X) %*% X
   return(solve(-sumx/4))
@@ -4211,10 +4218,10 @@ fitMSmoe <- function(rankings,
               convergence = convergence, record = record,
               em_settings = em_settings, call = cl)
 
-  class(out) <- "emMSmix"
+  class(out) <- "emMSmoe"
 
   out
-  message("Use functions summary() and plot() to summarize and visualize the object of class 'emMSmix'.\n")
+  message("Use functions summary() and plot() to summarize and visualize the object of class 'emMSmoe'.\n")
 
 
   return(out)
@@ -4493,6 +4500,277 @@ plot.emMSmix <- function(x, max_scale_w = 20, mar_lr = 0.4, mar_tb = 0.2, ...) {
   }
 
 }
+
+
+
+
+
+# print.emMSmoe ----
+#' Print of the EM algorithm for the mixture of experts of Mallows models with Spearman distance
+#'
+#' @description \code{print} method for class \code{"emMSmoe"}.
+#'
+#'
+#' @param x An object of class \code{"emMSmoe"} returned by \code{\link{fitMSmoe}}.
+#' @param ... Further arguments passed to or from other methods (not used).
+#'
+#' @rdname fitMSmoe
+#'
+#' @export print.emMSmoe
+#' @export
+#'
+print.emMSmoe <- function(x, ...) {
+  emMSmoe_out <- x
+
+  if (!is(emMSmoe_out, "emMSmoe")) {
+    stop("The function requires an object of S3 class 'emMSmoe' as its first argument.\n")
+  }
+
+  cat("\nCall:\n", paste(deparse(emMSmoe_out$call), sep = "\n", collapse = "\n"),
+      "\n\n",
+      sep = ""
+  )
+  n_items <- ncol(emMSmoe_out$mod$rho)
+  n_clust <- length(emMSmoe_out$mod$theta)
+  cat("N. of items:", n_items, "\n")
+  cat("N. of clusters:", n_clust, "\n")
+  cat("\n")
+  cat("N. of starting points:", length(emMSmoe_out$max_log_lik), "\n")
+  cat("Convergence achieved:", (emMSmoe_out$mod$conv == 1), "\n")
+  cat("N. of iterations:", length(emMSmoe_out$mod$log_lik), "\n")
+  cat("\n")
+  cat("BIC:", round(emMSmoe_out$mod$bic,digits=2), "(based on full or augmented rankings)\n")
+  if(emMSmoe_out$partial_data){
+    cat("Presence of partially-ranked sequences in the dataset:",emMSmoe_out$partial_data,"\n")
+  }
+  if (!is.null(emMSmoe_out$mod$bic_part)) {
+
+    cat("BIC_part:", round(emMSmoe_out$mod$bic_part,digits=2), "(based on partial rankings)\n")
+  }
+  invisible(x)
+
+}
+
+
+# summary.emMSmoe ----
+#' Summary of the fitted mixture of experts of Mallows models with Spearman distance
+#'
+#' @description \code{summary} method for class \code{"emMSmoe"}.
+#'
+#' @param object An object of class \code{"emMSmoe"} returned by \code{\link{fitMSmoe}}.
+#' @param digits Integer: decimal places for rounding the numerical summaries. Defaults to 3.
+#' @param ... Further arguments passed to or from other methods (not used).
+#'
+#' @return A list with the following named components:
+#'
+#'  \item{\code{modal_rankings}}{Integer matrix with the MLEs of the \eqn{G} component-specific consensus rankings in each row.}
+#'  \item{\code{modal_orderings}}{Character matrix with the MLEs of the \eqn{G} component-specific consensus orderings in each row.}
+#'  \item{\code{theta}}{Numeric vector of the MLEs of the \eqn{G} precisions.}
+#'  \item{\code{betas}}{Numeric matrix of the MLEs of the GLM parameters.}
+#'  \item{\code{MAP_distr}}{Percentage distribution of the component memberships based on the MAP allocation. Returned when \code{n_clust > 1}, otherwise \code{NULL}}
+#'  \item{\code{conv_perc}}{Percentage of convergence of the EM algorithm over the multiple starting points.}
+#'  \item{\code{BIC}}{BIC value (based on full or augmented rankings).}
+#'  \item{\code{BIC_part}}{BIC value (based on partial rankings).}
+#'  \item{\code{call}}{The matched call.}
+#'
+#' @seealso \code{\link{fitMSmoe}}, \code{\link{plot.emMSmoe}}
+#'
+#' @examples
+#'
+#'
+#'
+#' @export summary.emMSmoe
+#' @export
+summary.emMSmoe <- function(object, digits = 3, ...) {
+  emMSmoe_out <- object
+
+  if (!is(emMSmoe_out, "emMSmoe")) {
+    stop("The function requires an object of S3 class 'emMSmoe' as its first argument.\n")
+  }
+
+  cl <- emMSmoe_out$call
+  n_clust <- length(emMSmoe_out$mod$theta)
+  n_items <- ncol(emMSmoe_out$mod$rho)
+  item_names <- colnames(emMSmoe_out$mod$rho)
+  out <- list(
+    modal_rankings = emMSmoe_out$mod$rho,
+    modal_orderings = t(matrix(item_names[apply(emMSmoe_out$mod$rho, 1, order)], nrow = n_items, ncol = n_clust)),
+    theta = emMSmoe_out$mod$theta,
+    betas = emMSmoe_out$mod$betas,
+    MAP_distr = (if (n_clust > 1) round(100*prop.table(table(factor(emMSmoe_out$mod$map_classification, levels = 1:n_clust))), digits = digits) else NULL),
+    conv_perc = 100 * mean(emMSmoe_out$convergence),
+    BIC = emMSmoe_out$mod$bic,
+    BIC_part = (if (!is.null(emMSmoe_out$mod$bic_part)) round(emMSmoe_out$mod$bic_part,digits=digits) else emMSmoe_out$mod$bic_part),
+    call = cl
+  )
+
+  out[c(3:4,6:7)] <- lapply(out[c(3:4,6:7)], round, digits = digits)
+
+  rownames(out$betas) <- names(out$theta) <- paste0("Group", 1:n_clust)
+  dimnames(out$modal_rankings) <- list(paste0("Group", 1:n_clust), item_names)
+  dimnames(out$modal_orderings) <- list(paste0("Group", 1:n_clust), paste0("Rank", 1:n_items))
+
+  colnames(out$betas) <- c("Intercept",paste0("X", 1:(ncol(out$betas)-1)))
+  class(out) <- "summary.emMSmoe"
+  out
+}
+
+
+
+# print.summary.emMSmoe ----
+#' Print of the summary of fitted mixture of experts of Mallows models with Spearman distance
+#'
+#' \code{print} method for class \code{"summary.emMSmoe"}.
+#'
+#'
+#' @param x An object of class \code{"summary.emMSmoe"} returned by \code{\link{summary.emMSmoe}}.
+#' @param ... Further arguments passed to or from other methods (not used).
+#'
+#'
+#' @rdname summary.emMSmoe
+#'
+#' @export print.summary.emMSmoe
+#' @export
+#'
+print.summary.emMSmoe <- function(x, ...) {
+  summary.emMSmoe_out <- x
+
+  if (!is(summary.emMSmoe_out, "summary.emMSmoe")) {
+    stop("The function requires an object of S3 class 'summary.emMSmoe' as its first argument.\n")
+  }
+
+  cat("\nCall:\n", paste(deparse(summary.emMSmoe_out$call), sep = "\n", collapse = "\n"),
+      "\n\n",
+      sep = ""
+  )
+  cat("-----------------------------\n")
+  cat("--- MLE of the parameters ---\n")
+  cat("-----------------------------\n")
+  cat("\n")
+  cat("Component-specific consensus rankings:\n")
+  print(summary.emMSmoe_out$modal_rankings)
+  cat("\n")
+  cat("Component-specific consensus orderings:\n")
+  print(summary.emMSmoe_out$modal_orderings)
+  cat("\n")
+  cat("Component-specific precisions:\n")
+  print(summary.emMSmoe_out$theta)
+  cat("\n")
+  cat("GLM parameters:\n")
+  print(summary.emMSmoe_out$betas)
+  cat("\n")
+  invisible(x)
+}
+
+
+# plot.emMSmoe ----
+#' Plot the MLEs for the fitted mixture of experts of Mallows models with Spearman distance
+#'
+#' @description \code{plot} method for class \code{"emMSmoe"}.
+#'
+#'
+#' @param x An object of class \code{"emMSmoe"} returned by \code{\link{fitMSmoe}}.
+#' @param max_scale_w Positive scalar: maximum magnification of the dots in the bump plot, set proportional to the MLEs of the weights. Defaults to 20.
+#' @param mar_lr Numeric: margin for the left and right side of the plot. Defaults to 0.4.
+#' @param mar_tb Numeric: margin for the bottom and top side of the plot. Defaults to 0.2.
+#' @param ... Further arguments passed to or from other methods (not used).
+#'
+#' @return  Produce a bump plot to compare the component-specific consensus rankings of the fitted mixture of Mallow models with Spearman distance. The size of the dots of each consensus ranking is proportional to the weight of the corresponding component. When \code{n_clust > 1}, It also returns a heatmap of the estimated coponent membership probabilities.
+#'
+#' @references
+#'
+#' Sjoberg D (2020). ggbump: Bump Chart and Sigmoid Curves. R package version 0.1.10. \url{https://CRAN.R-project.org/package=ggbump}.
+#'
+#' Wickham H et al. (2019). Welcome to the tidyverse. \emph{Journal of Open Source Software}, \bold{4}(43), 1686, DOI: 10.21105/joss.01686.
+#'
+#' Wickham H (2016). ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag New York. ISBN 978-3-319-24277-4, \url{https://ggplot2.tidyverse.org}.
+#'
+#'
+#' @seealso \code{\link{fitMSmoe}}, \code{\link{summary.emMSmoe}}
+#'
+#' @examples
+#'
+#'
+#' @export plot.emMSmoe
+#' @export
+#'
+plot.emMSmoe <- function(x, max_scale_w = 20, mar_lr = 0.4, mar_tb = 0.2, ...) {
+  emMSmoe_out <- x
+
+  if (!is(emMSmoe_out, "emMSmoe")) {
+    stop("The function requires an object of S3 class 'emMSmoe' as its first argument.\n")
+  }
+
+  n_clust <- length(emMSmoe_out$mod$theta)
+  clusters <- 1:n_clust
+  positions <- c(emMSmoe_out$mod$rho)
+  n_items <- ncol(emMSmoe_out$mod$rho)
+  item_names <- colnames(emMSmoe_out$mod$rho)
+  items <- rep(item_names, each = n_clust)
+
+  df_bump <- data.frame(x = clusters, y = positions, group = items)
+  df_bump
+
+  df_bump_min <- df_bump %>% filter(x == min(x))
+  df_bump_max <- df_bump %>% filter(x == max(x))
+
+  pesi <- exp(emMSmoe_out$em_settings$X%*%t(emMSmoe_out$mod$betas))
+  pesi <- prop.table(pesi,1)
+
+  ggp_bump <- ggplot(df_bump, aes(x = x, y = .data$y, color = .data$group)) +
+    geom_bump(linewidth = 1) +
+    geom_point(size = rep(max_scale_w * colMeans(pesi), n_items)) +
+    geom_text(
+      data = df_bump_min,
+      aes(x = x - mar_tb, label = .data$group, y = .data$y, color = .data$group),
+      size = 3, hjust = 1
+    ) +
+    geom_text(
+      data = df_bump_max,
+      aes(x = x + mar_tb, label = .data$group, y = .data$y, color = .data$group),
+      size = 3, hjust = 0
+    ) +
+    scale_x_continuous(
+      limits = c(1 - mar_lr, n_clust + mar_lr),
+      breaks = seq(1, n_clust, 1)
+    ) +
+    labs(y = "Rank", x = "Group") +
+    scale_y_reverse(
+      limits = c(n_items + mar_tb, 1 - mar_tb),
+      breaks = seq(1, n_items, 1),
+      labels = seq(1, n_items, 1)
+    ) +
+    ggtitle(paste("Modal orderings of the", n_clust, "groups")) +
+    theme(legend.position = "none")
+
+
+  suppressWarnings(grid.arrange(ggp_bump, nrow = 1))
+
+  if(n_clust > 1){
+    colors_image <- colorRampPalette(brewer.pal(9, "GnBu"))(50)
+    chiplotto <- emMSmoe_out$mod$z_hat[sort(emMSmoe_out$mod$map_classification,index.return=TRUE)$ix,]
+    N <- ncol(chiplotto)
+    n <- nrow(chiplotto)
+    oldpar <- par(mar = c(3.1, 4.1, 2.1, 8.1))
+    on.exit(par(oldpar))
+    image(chiplotto, axes = F, main = "Estimated probabilities of cluster membership",
+          col = colors_image)
+    mtext(text = paste0("Group",1:N), side = 2, line = 0.6,
+          at = seq(0, 1, 1/(N - 1)), cex = 0.8, las = 2)
+    if(n<=100){
+      ini <- 1/(n - 1)
+      atSeq <- seq(0, 1, ini)
+      mtext(text = sort(emMSmoe_out$mod$map_classification,index.return=TRUE)$ix, side = 1, line = 0.3,
+            at = atSeq, cex = 0.5, las = 2)
+    }
+    mtext(paste0("Sample units"), side = 1, line=1.5, cex=0.8)
+    oldpar2 <- par(mar = c(3.1, 4.1, 2.1, 0))
+    on.exit(par(oldpar2))
+    image.plot(chiplotto, col = colors_image, legend.only = TRUE, horizontal = FALSE)
+  }
+
+}
+
 
 
 
@@ -5127,6 +5405,452 @@ plot.bootMSmix <- function(x, ...) {
 
 
 }
+
+
+
+# bootstrapMSmoe ----
+#' Bootstrap confidence intervals for mixture of experts of Mallows models with Spearman distance
+#'
+#' @description Return the bootstrap confidence intervals for the parameters of a mixture of experts of Mallow models with Spearman distance fitted on full or partial rankings.
+#'
+#' @details
+#' Two types of bootstrap are available: 1) \code{type = "soft"} (default), which is
+#' the soft-separated bootstrap (Crispino et al., 2024+) and returns confidence intervals for all
+#' the parameters of the mixture of experts of Mallow models with Spearman distance; 2) \code{type = "separated"}, which is the separated bootstrap
+#' (Taushanov and Berchtold, 2019) and returns bootstrap samples only for the component-specific
+#' consensus rankings and precisions.
+#'
+#' @param object An object of class \code{"emMSmoe"} returned by \code{\link{fitMSmoe}}.
+#' @param n_boot Number of desired bootstrap samples. Defaults to 50.
+#' @param type Character indicating which bootstrap method must be used. Available options are: \code{"soft"} or \code{"separated"}. Defaults to \code{"soft"}. See Details.
+#' @param conf_level Value in the interval (0,1] indicating the desired confidence level of the interval estimates. Defaults to 0.95.
+#' @param all Logical: whether the bootstrap samples of the MLEs for all the parameters must be returned. Defaults to \code{FALSE}.
+#' @param n_start Number of starting points for the MLE on each bootstrap sample. Defaults to 10.
+#' @param parallel Logical: whether parallelization over multiple initializations of the EM algorithm must be used. Used when \code{rankings} contains some partial rankings. Defaults to \code{FALSE}.
+#'
+#' @return
+#' An object of class \code{"bootMSmoe"}, namely a list with the following named components:
+#'    \describe{
+#'      \item{\code{itemwise_ci_rho}}{The bootstrap itemwise confidence intervals for the component-specific consensus rankings.}
+#'      \item{\code{ci_boot_theta}}{The bootstrap confidence intervals for the component-specific precisions.}
+#'      \item{\code{ci_boot_betas}}{The bootstrap confidence intervals for the GLM parameters. Returned when \code{type = "soft"}, otherwise \code{NULL}.}
+#'      \item{\code{boot}}{List containing all the \code{n_boot} bootstrap parameters. Returned when \code{all = TRUE}, otherwise \code{NULL}.}
+#'    }
+#'
+#' The \code{boot} sublist contains the following named components:
+#'      \describe{
+#'      \item{\code{rho_boot}}{List of length \code{n_clust} with the bootstrap MLEs of the consensus rankings. Each element of the list is an integer \code{n_boot} \eqn{\times}{x} \code{n_items} matrix containing, in each row, the bootstrap MLEs of the consensus ranking for a specific component.}
+#'      \item{\code{theta_boot}}{Numeric \code{n_boot}\eqn{\times}{x} \code{n_clust} matrix with the bootstrap MLEs of the component-specific precision parameters in each row.}
+#'      \item{\code{beta_boot}}{Numeric \code{n_clust-1}\eqn{\times}{x} \code{H+1}\eqn{\times}{x} \code{n_boot} array with the bootstrap GLM parameters in each slice. Returned when\code{type = "soft"}, otherwise \code{NULL}.}
+#'      }
+#'
+#'
+#' @references
+#'
+#' Crispino M, Mollica C and Modugno L (2024+). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
+#'
+#' Taushanov Z and Berchtold A (2019). Bootstrap validation of the estimated parameters in mixture models used for clustering. \emph{Journal de la société française de statistique}, \bold{160}(1).
+#'
+#' Efron B (1982). The Jackknife, the Bootstrap, and Other Resampling Plans. Philadelphia, \emph{Pa. :Society for Industrial and Applied Mathematics}.
+#'
+#'
+#' @examples
+#'
+#'
+#'
+#' @export
+#'
+bootstrapMSmoe <- function(object,
+                           n_boot = 50,
+                           type = "soft",
+                           conf_level = 0.95,
+                           all = FALSE,
+                           n_start = 10,
+                           parallel = FALSE) {
+
+  emMSmoe_out <- object
+
+  if (!is(emMSmoe_out, "emMSmoe")) {
+    stop("The function requires an object of S3 class 'emMSmoe' as its first argument.\n")
+  }
+
+  if(conf_level <= 0 | conf_level > 1){
+    stop("The argument 'conf_level' must a value in the interval (0,1].")
+  }
+
+  rankings <- emMSmoe_out$em_settings$rankings
+  X <- emMSmoe_out$em_settings$X
+
+  item_names <- colnames(rankings)
+  n_items <- ncol(rankings)
+  n_coeff <- ncol(X)
+  mc_em <- emMSmoe_out$em_settings$mc_em
+  n_clust <- emMSmoe_out$em_settings$n_clust
+  n_iter <- emMSmoe_out$em_settings$n_iter
+  theta_max <-  emMSmoe_out$em_settings$theta_max
+  theta_tune <-  emMSmoe_out$em_settings$theta_tune
+  eps <-  emMSmoe_out$em_settings$eps
+  theta_tol <-  emMSmoe_out$em_settings$theta_tol
+
+
+  out <- hetero_bootstrapMSmoe(
+    rankings = rankings,
+    X = X,
+    n_boot = n_boot,
+    type = type,
+    z_hat = emMSmoe_out$mod$z_hat,
+    classification = emMSmoe_out$mod$map_classification,
+    n_start = n_start,
+    mc_em = mc_em,
+    item_names = item_names,
+    parallel = parallel,
+    theta_max = theta_max,
+    theta_tune = theta_tune,
+    n_iter = n_iter,
+    eps = eps,
+    theta_tol = theta_tol
+  )
+
+
+  # BUILD CONFIDENCE INTERVALS
+  # RHO
+  ci_rho <- matrix(NA, ncol = n_items, nrow = n_clust)
+  for (g in 1:n_clust) ci_rho[g, ] <- itemwise_rank_hdi(out$rho_boot[[g]], prob_level = conf_level)$HPD_set
+
+  colnames(ci_rho) <- item_names
+  rownames(ci_rho) <- paste0("Group", 1:n_clust)
+
+  # THETA
+  ci_theta <- matrix(NA, ncol = 2, nrow = n_clust)
+
+  alpha <- 1 - conf_level
+
+  for (g in 1:n_clust) {
+    theta_ord_sorted <- sort(out$theta_boot[, g])
+    ci_theta[g, ] <- c(
+      round(theta_ord_sorted[ceiling(n_boot * alpha/2)], 3),
+      round(theta_ord_sorted[ceiling(n_boot * (1 - alpha/2))], 3)
+    )
+  }
+  colnames(ci_theta) <- c("lower", "upper")
+  rownames(ci_theta) <- paste0("Group", 1:n_clust)
+
+  # BETA
+  if (type == "soft") {
+    ci_betas <- matrix(NA, ncol = 2, nrow = (n_clust-1)*n_coeff)
+    i<-1
+    for (l in 1:n_coeff){
+    for (g in 2:n_clust) {
+        betas_ord_sorted <- sort(out$beta_boot[g-1,l,])
+        ci_betas[i,] <- c(
+          round(betas_ord_sorted[ceiling(n_boot * alpha/2)], 3),
+          round(betas_ord_sorted[ceiling(n_boot * (1 - alpha/2))], 3)
+        )
+        i<-i+1
+      }
+    }
+    colnames(ci_betas) <- c("lower", "upper")
+
+    groups <- paste0("Group", 2:n_clust)
+    coeffs <- (if (n_coeff > 1) c("Intercept",paste0("X", 1:(n_coeff-1))) else "Intercept")
+    labs <- expand.grid(groups, coeffs)
+    rownames(ci_betas) <- paste0(labs$Var1, ", ", labs$Var2)
+
+
+  } else {
+    ci_betas <- NULL
+  }
+
+  out_boot <- list(itemwise_ci_rho = ci_rho,
+                   ci_boot_theta = ci_theta,
+                   ci_boot_betas = ci_betas,
+                   conf_level = conf_level,
+                   boot = (if (all) out else NULL))
+
+  class(out_boot) <- "bootMSmoe"
+
+  message("Use function plot() to visualize the object of class 'bootMSmoe'.\n")
+
+  return(out_boot)
+
+}
+
+# hetero_bootstrapMSmoe ----
+hetero_bootstrapMSmoe <- function(rankings,
+                                  X,
+                                  n_boot,
+                                  type,
+                                  z_hat,
+                                  classification,
+                                  n_start,
+                                  mc_em,
+                                  item_names,
+                                  parallel,
+                                  theta_max,
+                                  theta_tune,
+                                  n_iter,
+                                  eps,
+                                  theta_tol) {
+
+
+  if (!(type%in%c("soft","separated"))){
+    stop("Only soft and separated bootstrap types are available for the G-component mixture of experts of Mallow models.\n")
+  }
+
+
+  n_items <- ncol(rankings)
+  N <- nrow(rankings)
+  n_coeff <- ncol(X)
+  n_clust <- ncol(z_hat)
+
+  check_na <- is.na(rankings)
+  partial <- any(check_na)
+
+  if(partial){
+    message("The dataset contains partial rankings. Therefore, the bootstrap procedure may be slow.\n")
+  }
+
+
+  cardinalities <- suppressMessages(spear_dist_distr(n_items))
+
+  rho_boot <- rep(list(matrix(NA, nrow = n_boot, ncol = n_items,
+                              dimnames = list(NULL, item_names))), n_clust)
+  names(rho_boot) <- paste0("Group", 1:n_clust)
+
+  theta_boot <- matrix(NA, nrow = n_boot, ncol = n_clust)
+
+  if (type != "soft") {
+    Rg <- split(x = as.data.frame(rankings), f = classification)
+    Rg <- lapply(Rg, as.matrix)
+    Xg <- split(x = as.data.frame(X), f = classification)
+    Xg <- lapply(Xg, as.matrix)
+    freq <- tabulate(classification, nbins = n_clust)
+  } else {
+    beta_boot <- array(NA, dim = c(n_clust-1, n_coeff, n_boot))
+  }
+
+
+  for (h in 1:n_boot) {
+    if (h %% 50 == 0) {
+      print(paste("Bootstrap iteration", h))
+    }
+
+    if (type != "soft") {
+      for (g in 1:n_clust) {
+        tmp <- sample(x = freq[g], size = freq[g],replace = TRUE)
+        Rstar <- Rg[[g]][, , drop = FALSE]
+        Xstar <- Xg[[g]][, , drop = FALSE]
+
+        if (partial) {
+          FIT <- quiet(fitMSmix(
+            rankings = Rstar,
+            n_clust = 1,
+            n_start = n_start,
+            mc_em = mc_em,
+            parallel = parallel,
+            theta_max = theta_max,
+            theta_tune = theta_tune,
+            n_iter = n_iter,
+            eps = eps,
+            theta_tol = theta_tol
+          ))
+          rho_boot[[g]][h, ] <- FIT$mod$rho
+          theta_boot[h, g] <- FIT$mod$theta
+        } else {
+          rho_boot[[g]][h, ] <- rank(colMeans(Rstar), ties.method = "random")
+          rhs <- mean(compute_rank_distance(Rstar, rho_boot[[g]][h, ], "spearman"))
+          theta_boot[h, g] <- Mstep_theta(theta_max = theta_max,
+                                          n_items = n_items,
+                                          cardinalities = cardinalities,
+                                          rhs = rhs, theta_tol = theta_tol)
+        }
+      }
+    } else {
+
+      classification <- apply(z_hat, 1, sample, size = 1, x = 1:n_clust, replace = TRUE)
+      quali<-unlist(lapply(1:n_clust,
+                           function(g) {chi <- which(classification == g)
+                           sample(chi, size = length(chi), replace = TRUE)}
+      )
+      )
+      class <- sort(classification)
+      Xstar <- X[quali,-1]
+      m <- multinom(class ~ Xstar, trace = FALSE)
+      beta_boot[,,h] <- coef(m)
+
+
+      for (g in 1:n_clust) {
+        Rstar <- rankings[quali[which(class==g)], , drop = FALSE]
+
+        if (partial) {
+          FIT <- quiet(fitMSmix(
+            rankings = Rstar,
+            n_clust = 1,
+            n_start = n_start,
+            mc_em = mc_em,
+            parallel = parallel,
+            theta_max = theta_max,
+            theta_tune = theta_tune,
+            n_iter = n_iter,
+            eps = eps,
+            theta_tol = theta_tol
+          ))
+          rho_boot[[g]][h, ] <- FIT$mod$rho
+          theta_boot[h, g] <- FIT$mod$theta
+        } else {
+          rho_boot[[g]][h, ] <- rank(colMeans(Rstar), ties.method = "random")
+          rhs <- mean(compute_rank_distance(Rstar, rho_boot[[g]][h, ], "spearman"))
+          theta_boot[h, g] <- Mstep_theta(theta_max = theta_max,
+                                          n_items = n_items, cardinalities = cardinalities,
+                                          rhs = rhs, theta_tol = theta_tol)
+        }
+      }
+    }
+  }
+
+
+  out <- list(rho_boot = rho_boot, theta_boot = theta_boot,
+              beta_boot = (if (type == "soft") beta_boot else NULL))
+
+  return(out)
+}
+
+
+
+
+# print.bootMSmoe ----
+#' Print of the bootstrap confidence intervals for mixtures of experts of
+#' Mallows models with Spearman distance
+#'
+#' @description \code{print} method for class \code{"bootMSmoe"}.
+#'
+#'
+#' @param x An object of class \code{"bootMSmoe"} returned by \code{\link{bootstrapMSmoe}}.
+#' @param ... Further arguments passed to or from other methods (not used).
+#'
+#' @rdname bootMSmoe
+#'
+#' @export print.bootMSmoe
+#' @export
+#'
+print.bootMSmoe <- function(x, ...) {
+
+  bootMSmoe_out <- x
+
+  if (!is(bootMSmoe_out, "bootMSmoe")) {
+    stop("The function requires an object of S3 class 'bootMSmoe' as its first argument.\n")
+  }
+
+  cat(paste0("Bootstrap itemwise ", 100*bootMSmoe_out$conf_level, "%CIs for the consensus rankings:\n"))
+  cat("\n")
+  print(bootMSmoe_out$itemwise_ci_rho)
+  cat("\n")
+  cat("\n")
+  cat(paste0("Bootstrap ", 100*bootMSmoe_out$conf_level, "%CIs for the precisions:\n"))
+  cat("\n")
+  print(bootMSmoe_out$ci_boot_theta)
+  cat("\n")
+  cat("\n")
+  cat(paste0("Bootstrap ", 100*bootMSmoe_out$conf_level, "%CIs for the GLM coefficients:\n"))
+  cat("\n")
+  print(bootMSmoe_out$ci_boot_betas)
+  cat("\n")
+  invisible(x)
+
+}
+
+
+# plot.bootMSmoe ----
+#' Plot the bootstrap confidence intervals of the consensus rankings estimates
+#'
+#' @description \code{plot} method for class \code{"bootMSmoe"}.
+#'
+#'
+#' @param x An object of class \code{"bootMSmoe"} returned by \code{\link{bootstrapMSmoe}}.
+#' @param ... Further arguments passed to or from other methods (not used).
+#'
+#' @return
+#' For the component-specific bootstrap consensus ranking estimates, a heatmap is returned.
+#'
+#' For the component-specific precisions a kernel density plot is returned.
+#'
+#' For the GLM parameters a box-plot is returned.
+#' @rdname bootstrapMSmoe
+#'
+#' @export plot.bootMSmoe
+#' @export
+#'
+
+plot.bootMSmoe <- function(x, ...) {
+  bootMSmoe_out <- x
+
+  if (!is(bootMSmoe_out, "bootMSmoe")) {
+    stop("The function requires an object of S3 class 'bootMSmoe' as its first argument.\n")
+  }
+
+  if (is.null(bootMSmoe_out$boot)) {
+    stop("Run the 'bootstrapMSmoe' function with argument all = TRUE before plotting.\n")
+  }
+
+  n_clust <- nrow(bootMSmoe_out$ci_boot_theta)
+
+  oldpar <- par(mfrow = c(1, 1))
+  on.exit(par(oldpar))
+
+  den <- list()
+  dx <- dy <- NULL
+
+    for(g in 1:n_clust){
+
+      den[[g]] <- density(bootMSmoe_out$boot$theta_boot[,g])
+      dx <-c(dx,den[[g]]$x)
+      dy <-c(dy,den[[g]]$y)
+
+
+      ### HEATMAP rho
+      colors_image <- colorRampPalette(brewer.pal(9, "YlOrRd"))(50)
+      chiplotto <- itemwise_rank_marginals(rankings = bootMSmoe_out$boot$rho_boot[[g]])
+      N <- dim(chiplotto)[2]
+      n <- dim(chiplotto)[1]
+      oldpar2 <- par(mar=c(3.1,9.1,2.1,8.1))
+      on.exit(par(oldpar2))
+      image(chiplotto, axes=F,main=paste("Bootstrap MLEs of the consensus ranking for component",g),col=colors_image)
+      mtext(text=colnames(chiplotto), side=2, line=0.6, at=seq(0,1,1/(N-1)), cex=0.8,las=2)
+      ini<-1/(n-1)
+      atSeq<-seq(0,1,ini)
+      mtext(text=c(rownames(chiplotto)), side=1,
+            line=0.3, at=seq(0,1,ini), cex=0.8,las=2)
+      oldpar3 <- par(mar=c(3.1,9.1,2.1,0))
+      on.exit(par(oldpar3))
+      image.plot(chiplotto, col=colors_image,legend.only=TRUE, horizontal = FALSE)
+
+
+    }
+
+    #theta
+    oldpar4 <- par(mar=rep(4,4))
+    on.exit(par(oldpar4))
+    ramp <- colorRamp(c("darkblue","darkgreen","yellow"))
+    ramp2 <- rgb( ramp(seq(0, 1, length.out = n_clust)), maxColorValue = 255)
+    plot(den[[1]], lwd = 2,
+         col = ramp2[1],ylim=range(dy),xlim=range(dx),
+         main = "Bootstrap MLEs of the precision parameters",
+         xlab = expression(theta), ylab = "Density")
+    polygon(den[[1]], col = adjustcolor(ramp2[1],0.5))
+    for(g in 2:n_clust){
+      lines(den[[g]], lwd = 2, col = ramp2[g])
+      polygon(den[[g]], col = adjustcolor(ramp2[g],0.5))
+    }
+    legend('topright',legend=(1:n_clust),title='Component',
+           fill=adjustcolor(ramp2,0.5),bty='n')
+
+
+
+}
+
+
+
+
 
 # confintMSmix ----
 #' Hessian-based confidence intervals for mixtures of Mallows models with Spearman distance
