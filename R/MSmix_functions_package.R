@@ -33,12 +33,10 @@ is_numeric_vector <- function(xx) {
   is.numeric(xx) && is.atomic(xx)
 }
 
-
-# order_beta
+# order_beta ----
 order_beta <- function(betas,ref_clust){
   return(t(t(betas)-betas[ref_clust,]))
 }
-
 
 # Bmatrix ----
 Bmatrix <- function(X) {
@@ -68,6 +66,8 @@ assign_cluster <- function(rankings_orig, z_hat) {
   }
   return(z_hat_orig)
 }
+
+
 
 # assign_cluster_partial ----
 assign_cluster_partial <- function(rankings_part_orig,
@@ -144,10 +144,11 @@ assign_cluster_partial <- function(rankings_part_orig,
   return(z_hat_orig)
 }
 
+# assign_cluster_partial_moe ----
 assign_cluster_partial_moe <- function(
-                                   aug_list,
-                                   z_hat,
-                                   freq_compl) {
+    aug_list,
+    z_hat,
+    freq_compl) {
 
   n_clust <- ncol(z_hat)
   Nstar <- length(aug_list)
@@ -1083,8 +1084,6 @@ rMSmoe <- function(n_items,
               X = X, weights = Probs, classification = classification))
 }
 
-
-
 # mar_cens ----
 mar_cens <- function(rankings, nranked = NULL, probs = rep(1,ncol(rankings) - 1)){
 
@@ -1800,23 +1799,28 @@ f1_estn <- function(elem,freq_part,rho,theta){
   gr <- prop.table(gr)
   nx <- freq_part * gr
   return(nx)
-}
+} # case G=1: vector of length M=number of complete rankings
+# compatible with a given partial ranking, whose generic entry is the term of the
+# sum in eq. (9) of paper published on SC (2023)
 
 f2_estn <- function(elem,freq_part,rho,theta,weights,logZ){
 
   if (nrow(elem) == 1) {
     tmp2dist <- matrix(apply(rho, 1, compute_rank_distance, rankings = elem, metric = "spearman"), ncol = 1)
-  } else {
+  } else { # 1*M matrix
     tmp2dist <- t(apply(rho, 1, compute_rank_distance, rankings = elem, metric = "spearman"))
-  }
+  } # G*M matrix
 
-  tmp <- -theta * tmp2dist + log(weights) - logZ
+  tmp <- -theta * tmp2dist + log(weights) - logZ # G*M matrix
   gr <- exp(tmp - max(tmp))
-  gr <- colSums(gr)
+  gr <- colSums(gr) # vector of length M
   gr <- prop.table(gr)
   nx <- freq_part * gr
   return(nx)
-}
+} # case G>1: vector of length M=number of complete rankings
+# compatible with a given partial ranking, whose generic entry is the term of the
+# sum in eq. (9) of paper published on SC (2023)
+
 
 estn <- function(theta, rho, weights,
                  aug_list, aug_mat, aug_mat_vec,
@@ -1843,10 +1847,10 @@ estn <- function(theta, rho, weights,
   return(freq_compl_est)
 }
 
-
+# estn_moe ----
 estn_moe <- function(theta, rho, weights,
-                 aug_list, aug_mat, aug_mat_vec,
-                 freq_part, cardinalities) {
+                     aug_list, aug_mat, aug_mat_vec,
+                     freq_part, cardinalities) {
 
   N <- length(aug_list)
   n_clust <- length(theta)
@@ -3052,39 +3056,36 @@ em_db_mix <- function(rankings_orig,
   ))
 }
 
-
-
-
 # em_db_moe ----
 em_db_moe <- function(rankings_orig,
-  rankings,
-  X,
-  B,
-  item_names,
-  freq_compl,
-  partial,
-  rankings_part,
-  freq_part,
-  N_partial_rows,
-  partial_rows,
-  missing_entries,
-  N,
-  n_items,
-  n_clust,
-  n_coeff,
-  n_iter = 200,
-  theta_max = 3,
-  init,
-  cardinalities,
-  eps = 10^(-6),
-  plot_log_lik = FALSE,
-  plot_log_lik_part = FALSE,
-  aug_list,
-  aug_mat,
-  aug_mat_vec,
-  mc_em,
-  theta_tune,
-  theta_tol = 1e-05) {
+                      rankings,
+                      X,
+                      B,
+                      item_names,
+                      freq_compl,
+                      partial,
+                      rankings_part,
+                      freq_part,
+                      N_partial_rows,
+                      partial_rows,
+                      missing_entries,
+                      N,
+                      n_items,
+                      n_clust,
+                      n_coeff,
+                      n_iter = 200,
+                      theta_max = 3,
+                      init,
+                      cardinalities,
+                      eps = 10^(-6),
+                      plot_log_lik = FALSE,
+                      plot_log_lik_part = FALSE,
+                      aug_list,
+                      aug_mat,
+                      aug_mat_vec,
+                      mc_em,
+                      theta_tune,
+                      theta_tol = 1e-05) {
 
   rho <- init$rho
   theta <- init$theta
@@ -3126,10 +3127,10 @@ em_db_moe <- function(rankings_orig,
       tmp_beta <- betas
 
       for(m in 1:5){### MARTA: questo loop serve per convergenza(5 è ok?)
-      mmstep <- MMstep_weights(z_hat = z_hat, weights = tmp_w,
-                               betas = tmp_beta, X = X, B = B)
-      tmp_w <- mmstep[[1]]
-      tmp_beta <- mmstep[[2]]
+        mmstep <- MMstep_weights(z_hat = z_hat, weights = tmp_w,
+                                 betas = tmp_beta, X = X, B = B)
+        tmp_w <- mmstep[[1]]
+        tmp_beta <- mmstep[[2]]
 
       }
 
@@ -3700,7 +3701,7 @@ fitMSmix <- function(rankings,
   }
 
   if (!is.null(mod$augmented_rankings)){
-     dimnames(mod$augmented_rankings) = list(NULL, item_names)
+    dimnames(mod$augmented_rankings) = list(NULL, item_names)
   }
 
 
@@ -3725,10 +3726,6 @@ fitMSmix <- function(rankings,
 
   return(out)
 }
-
-
-
-
 
 # fitMSmoe ----
 #' MLE of MoE of Mallows models with Spearman distance via EMM algorithms
@@ -3882,9 +3879,9 @@ fitMSmoe <- function(rankings,
 
   aug_mat_vec = NULL
 
-   if (any(is.na(rankings))) {
-   rankings <- suppressWarnings(fill_single_entries_new(data = rankings))
-   }
+  if (any(is.na(rankings))) {
+    rankings <- suppressWarnings(fill_single_entries_new(data = rankings))
+  }
 
   N <- nrow(rankings)
 
@@ -3958,7 +3955,7 @@ fitMSmoe <- function(rankings,
         tmp <- nrow(aug_list[[j]])
         aug_list_X[[j]]<-cbind(aug_list[[j]],
                                matrix(rep(X[j,], each=tmp),nrow=tmp,ncol=ncol(X)))
-        }
+      }
 
       aug_mat <- do.call(rbind, aug_list_X)
       aug_mat_vec <- apply(aug_mat,1,paste0,sep="-",collapse="")
@@ -4055,34 +4052,34 @@ fitMSmoe <- function(rankings,
       }
 
       mod[[l]] <- em_db_moe(rankings_orig,
-        rankings = rankings,
-        X = X,
-        B = B,
-        item_names = item_names,
-        freq_compl = freq_compl,
-        partial = partial,
-        rankings_part,
-        freq_part,
-        N_partial_rows,
-        partial_rows,
-        missing_entries,
-        N = N,
-        n_items = n_items,
-        n_clust = n_clust,
-        n_coeff = n_coeff,
-        n_iter = n_iter,
-        theta_max = theta_max,
-        init = init[[i]],
-        cardinalities = cardinalities,
-        eps = eps,
-        plot_log_lik = plot_log_lik,
-        plot_log_lik_part = FALSE,
-        aug_list,
-        aug_mat,
-        aug_mat_vec,
-        mc_em,
-        theta_tune = theta_tune,
-        theta_tol = theta_tol)
+                            rankings = rankings,
+                            X = X,
+                            B = B,
+                            item_names = item_names,
+                            freq_compl = freq_compl,
+                            partial = partial,
+                            rankings_part,
+                            freq_part,
+                            N_partial_rows,
+                            partial_rows,
+                            missing_entries,
+                            N = N,
+                            n_items = n_items,
+                            n_clust = n_clust,
+                            n_coeff = n_coeff,
+                            n_iter = n_iter,
+                            theta_max = theta_max,
+                            init = init[[i]],
+                            cardinalities = cardinalities,
+                            eps = eps,
+                            plot_log_lik = plot_log_lik,
+                            plot_log_lik_part = FALSE,
+                            aug_list,
+                            aug_mat,
+                            aug_mat_vec,
+                            mc_em,
+                            theta_tune = theta_tune,
+                            theta_tol = theta_tol)
 
 
       max_log_lik[l] <- max(mod[[l]]$log_lik)
@@ -4182,25 +4179,25 @@ fitMSmoe <- function(rankings,
 
 
   if (n_clust > 1){
-   mod$map_classification <- apply(mod$z_hat, 1, which.max)
+    mod$map_classification <- apply(mod$z_hat, 1, which.max)
   }
 
   if (partial & comp_log_lik_part & !inherits(aug_list, "try-error")) {
     pesi <- exp(X%*%t(mod$betas))
     pesi <- prop.table(pesi,1)
 
-     mod$best_log_lik_part <- log_lik_db_moe_partial(
-       rho = mod$rho, theta = mod$theta, weights = pesi,
-       aug_list = aug_list, freq_part = freq_part,
-       cardinalities = cardinalities
-     )
-     mod$bic_part <- -2 * mod$best_log_lik_part + (2 * n_clust + n_coeff*(n_clust - 1)) * log(N)
-   }
+    mod$best_log_lik_part <- log_lik_db_moe_partial(
+      rho = mod$rho, theta = mod$theta, weights = pesi,
+      aug_list = aug_list, freq_part = freq_part,
+      cardinalities = cardinalities
+    )
+    mod$bic_part <- -2 * mod$best_log_lik_part + (2 * n_clust + n_coeff*(n_clust - 1)) * log(N)
+  }
 
 
-   if (!is.null(mod$augmented_rankings)){
-     dimnames(mod$augmented_rankings) = list(NULL, item_names)
-   }
+  if (!is.null(mod$augmented_rankings)){
+    dimnames(mod$augmented_rankings) = list(NULL, item_names)
+  }
 
 
   em_settings <- list(rankings = rankings_orig,
@@ -4501,10 +4498,6 @@ plot.emMSmix <- function(x, max_scale_w = 20, mar_lr = 0.4, mar_tb = 0.2, ...) {
 
 }
 
-
-
-
-
 # print.emMSmoe ----
 #' Print of the EM algorithm for the mixture of experts of Mallows models with Spearman distance
 #'
@@ -4770,9 +4763,6 @@ plot.emMSmoe <- function(x, max_scale_w = 20, mar_lr = 0.4, mar_tb = 0.2, ...) {
   }
 
 }
-
-
-
 
 # bootstrapMSmix ----
 #' Bootstrap confidence intervals for mixtures of Mallows models with Spearman distance
@@ -5252,7 +5242,6 @@ print.bootMSmix <- function(x, ...) {
 
 }
 
-
 # plot.bootMSmix ----
 #' Plot the bootstrap confidence intervals of the consensus rankings estimates
 #'
@@ -5540,7 +5529,7 @@ bootstrapMSmoe <- function(object,
     ci_betas <- matrix(NA, ncol = 2, nrow = (n_clust-1)*n_coeff)
     i<-1
     for (l in 1:n_coeff){
-    for (g in 2:n_clust) {
+      for (g in 2:n_clust) {
         betas_ord_sorted <- sort(out$beta_boot[g-1,l,])
         ci_betas[i,] <- c(
           round(betas_ord_sorted[ceiling(n_boot * alpha/2)], 3),
@@ -5800,56 +5789,161 @@ plot.bootMSmoe <- function(x, ...) {
   den <- list()
   dx <- dy <- NULL
 
-    for(g in 1:n_clust){
+  for(g in 1:n_clust){
 
-      den[[g]] <- density(bootMSmoe_out$boot$theta_boot[,g])
-      dx <-c(dx,den[[g]]$x)
-      dy <-c(dy,den[[g]]$y)
-
-
-      ### HEATMAP rho
-      colors_image <- colorRampPalette(brewer.pal(9, "YlOrRd"))(50)
-      chiplotto <- itemwise_rank_marginals(rankings = bootMSmoe_out$boot$rho_boot[[g]])
-      N <- dim(chiplotto)[2]
-      n <- dim(chiplotto)[1]
-      oldpar2 <- par(mar=c(3.1,9.1,2.1,8.1))
-      on.exit(par(oldpar2))
-      image(chiplotto, axes=F,main=paste("Bootstrap MLEs of the consensus ranking for component",g),col=colors_image)
-      mtext(text=colnames(chiplotto), side=2, line=0.6, at=seq(0,1,1/(N-1)), cex=0.8,las=2)
-      ini<-1/(n-1)
-      atSeq<-seq(0,1,ini)
-      mtext(text=c(rownames(chiplotto)), side=1,
-            line=0.3, at=seq(0,1,ini), cex=0.8,las=2)
-      oldpar3 <- par(mar=c(3.1,9.1,2.1,0))
-      on.exit(par(oldpar3))
-      image.plot(chiplotto, col=colors_image,legend.only=TRUE, horizontal = FALSE)
+    den[[g]] <- density(bootMSmoe_out$boot$theta_boot[,g])
+    dx <-c(dx,den[[g]]$x)
+    dy <-c(dy,den[[g]]$y)
 
 
-    }
+    ### HEATMAP rho
+    colors_image <- colorRampPalette(brewer.pal(9, "YlOrRd"))(50)
+    chiplotto <- itemwise_rank_marginals(rankings = bootMSmoe_out$boot$rho_boot[[g]])
+    N <- dim(chiplotto)[2]
+    n <- dim(chiplotto)[1]
+    oldpar2 <- par(mar=c(3.1,9.1,2.1,8.1))
+    on.exit(par(oldpar2))
+    image(chiplotto, axes=F,main=paste("Bootstrap MLEs of the consensus ranking for component",g),col=colors_image)
+    mtext(text=colnames(chiplotto), side=2, line=0.6, at=seq(0,1,1/(N-1)), cex=0.8,las=2)
+    ini<-1/(n-1)
+    atSeq<-seq(0,1,ini)
+    mtext(text=c(rownames(chiplotto)), side=1,
+          line=0.3, at=seq(0,1,ini), cex=0.8,las=2)
+    oldpar3 <- par(mar=c(3.1,9.1,2.1,0))
+    on.exit(par(oldpar3))
+    image.plot(chiplotto, col=colors_image,legend.only=TRUE, horizontal = FALSE)
 
-    #theta
-    oldpar4 <- par(mar=rep(4,4))
-    on.exit(par(oldpar4))
-    ramp <- colorRamp(c("darkblue","darkgreen","yellow"))
-    ramp2 <- rgb( ramp(seq(0, 1, length.out = n_clust)), maxColorValue = 255)
-    plot(den[[1]], lwd = 2,
-         col = ramp2[1],ylim=range(dy),xlim=range(dx),
-         main = "Bootstrap MLEs of the precision parameters",
-         xlab = expression(theta), ylab = "Density")
-    polygon(den[[1]], col = adjustcolor(ramp2[1],0.5))
-    for(g in 2:n_clust){
-      lines(den[[g]], lwd = 2, col = ramp2[g])
-      polygon(den[[g]], col = adjustcolor(ramp2[g],0.5))
-    }
-    legend('topright',legend=(1:n_clust),title='Component',
-           fill=adjustcolor(ramp2,0.5),bty='n')
+
+  }
+
+  #theta
+  oldpar4 <- par(mar=rep(4,4))
+  on.exit(par(oldpar4))
+  ramp <- colorRamp(c("darkblue","darkgreen","yellow"))
+  ramp2 <- rgb( ramp(seq(0, 1, length.out = n_clust)), maxColorValue = 255)
+  plot(den[[1]], lwd = 2,
+       col = ramp2[1],ylim=range(dy),xlim=range(dx),
+       main = "Bootstrap MLEs of the precision parameters",
+       xlab = expression(theta), ylab = "Density")
+  polygon(den[[1]], col = adjustcolor(ramp2[1],0.5))
+  for(g in 2:n_clust){
+    lines(den[[g]], lwd = 2, col = ramp2[g])
+    polygon(den[[g]], col = adjustcolor(ramp2[g],0.5))
+  }
+  legend('topright',legend=(1:n_clust),title='Component',
+         fill=adjustcolor(ramp2,0.5),bty='n')
 
 
 
 }
 
+# seMSmix ----
+#' Standard errors for mixtures of Mallows models with Spearman distance
+#'
+#' @description Return the (Hessian-based) standard errors of the continuous parameters of a mixture of Mallow models with Spearman distance fitted to full rankings, namely the component-specific precisions and weights.
+#'
+#' @details The current implementation of the standard errors assumes that the observed rankings are complete.
+#'
+#' @param object An object of class \code{"emMSmoe"} returned by \code{\link{fitMSmoe}}.
+#' @param conf_level Value in the interval (0,1] indicating the desired confidence level of the interval estimates. Defaults to 0.95.
+#'
+#'
+#' @return A list with the following named components:
+#'
+#' \item{\code{ci_theta}}{The confidence intervals for the precision parameters.}
+#' \item{\code{ci_weights}}{The confidence intervals for the mixture weights (when \eqn{G>1}), otherwise \code{NULL}.}
+#'
+#' @references
+#' Crispino M, Mollica C and Modugno L (2024+). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
+#'
+#' Marden JI (1995). Analyzing and modeling rank data. \emph{Monographs on Statistics and Applied Probability} (64). Chapman & Hall, ISSN: 0-412-99521-2. London.
+#'
+#' McLachlan G and Peel D (2000). Finite Mixture Models. \emph{Wiley Series in Probability and Statistics}, John Wiley & Sons.
+#'
+#'
+#' @examples
+#'
+#' ## Example 1. Simulate rankings from a 2-component mixture of Mallow models
+#' ## with Spearman distance.
+#' set.seed(123)
+#' d_sim <- rMSmoe(sample_size = 75, n_items = 8, n_clust = 2)
+#' rankings <- d_sim$samples
+#' # Fit the basic Mallows model with Spearman distance.
+#' set.seed(123)
+#' fit1 <- fitMSmoe(rankings = rankings, n_clust = 1, n_start = 10)
+#' # Compute the hessian-based confidence intervals for the MLEs of the precision.
+#' confintMSmoe(object = fit1)
+#' # Fit the true model.
+#' set.seed(123)
+#' fit2 <- fitMSmoe(rankings = rankings, n_clust = 2, n_start = 10)
+#' # Compute the hessian-based confidence intervals for the MLEs of the weights and precisions.
+#' confintMSmoe(object = fit2)
+#'
+#' @export
+#'
+seMSmix <- function(object){
+  emMSmix_out <- object
+  if (!is(emMSmix_out, "emMSmix")) {
+    stop("The function requires an object of S3 class 'emMSmix' as its first argument.\n")
+  }
+  if (emMSmix_out$partial_data) {
+    stop("The function assumes that the fitted dataset is composed of full rankings only.\n")
+  }
 
+  rankings <- emMSmix_out$em_settings$rankings
+  N <- nrow(rankings)
 
+  rho_mle <- emMSmix_out$mod$rho
+  n_items <- ncol(rho_mle)
+  dist_mat <- apply(rho_mle,1,spear_dist,rankings=rankings) # N vector (when n_clust=1) or N*n_clust matrix (when n_clust>1)
+
+  theta_mle <- emMSmix_out$mod$theta
+  n_clust <- length(theta_mle)
+  expect_dist <- sapply(theta_mle,expected_spear_dist, n_items=n_items, log = FALSE) # n_clust vector
+
+  if (n_clust == 1){
+    # Score function for theta
+    score_theta <- score_funct <- -(dist_mat-expect_dist) # N vector
+
+  }else{
+    z_hat_mle <- emMSmix_out$mod$z_hat
+    # Score function for theta
+    score_theta <- -z_hat_mle*(dist_mat-matrix(expect_dist, nrow=N, ncol=n_clust, byrow=TRUE)) # N*n_clust matrix
+    # Score function for weights
+    weights_mle <- emMSmix_out$mod$weights
+    score_weights <- t(t(z_hat_mle)/weights_mle)[,-n_clust,drop=FALSE] # N*(n_clust-1) matrix
+    score_funct <- cbind(score_theta, score_weights) # N times 2*n_clust-1 matrix
+
+  }
+
+  # Approximate empirical information matrix
+  approx_emp_info <- t(score_funct)%*%score_funct # 1 times 1 matrix (when n_clust=1) 2*n_clust-1 times 2*n_clust-1 matrix (when n_clust>1)
+
+  # SE
+  var_cov_mat <- solve(approx_emp_info)
+  var_vec <- diag(var_cov_mat)
+  approx_se <- sqrt(var_vec)
+  se_theta <- approx_se[1:n_clust]
+
+  if (n_clust > 1){
+    if (n_clust == 2){
+      se_weights <- rep(approx_se[-c(1:n_clust)],n_clust)
+    }else{
+      var_cov_weights_mat <- var_cov_mat[-c(1:n_clust),-c(1:n_clust)]
+      cov_weights <- var_cov_mat[lower.tri(var_cov_weights_mat)]
+      se_weights <- c(approx_se[-c(1:n_clust)],
+                      sqrt(sum(diag(var_cov_weights_mat))+2*sum(cov_weights)))
+    }
+    }
+
+  out <- list(se_theta = se_theta,
+              se_weights = (if (n_clust > 1) se_weights else NULL))
+
+  return(out)
+
+}
+# list with: a positive scalar and a NULL element (when n_clust=1) or
+#            two vectors of length n_clust (when n_clust>1)
 
 
 # confintMSmix ----
@@ -5866,14 +5960,14 @@ plot.bootMSmoe <- function(x, ...) {
 #' @return A list with the following named components:
 #'
 #' \item{\code{ci_theta}}{The confidence intervals for the precision parameters.}
-#' \item{\code{ci_weights}}{The confidence intervals for the mixture weights. Returned when \eqn{G>1}.}
+#' \item{\code{ci_weights}}{The confidence intervals for the mixture weights (when \eqn{G>1}), otherwise \code{NULL}.}
 #'
 #' @references
 #' Crispino M, Mollica C and Modugno L (2024+). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
 #'
 #' Marden JI (1995). Analyzing and modeling rank data. \emph{Monographs on Statistics and Applied Probability} (64). Chapman & Hall, ISSN: 0-412-99521-2. London.
 #'
-#' Mclachlan G and Peel D (2000). Finite Mixture Models. \emph{Vol. 299. New York: Wiley}.
+#' McLachlan G and Peel D (2000). Finite Mixture Models. \emph{Wiley Series in Probability and Statistics}, John Wiley & Sons.
 #'
 #'
 #' @examples
@@ -5897,6 +5991,7 @@ plot.bootMSmoe <- function(x, ...) {
 #' @export
 #'
 confintMSmix <- function(object, conf_level = 0.95){
+
   emMSmix_out <- object
   if (!is(emMSmix_out, "emMSmix")) {
     stop("The function requires an object of S3 class 'emMSmix' as its first argument.\n")
@@ -5904,56 +5999,248 @@ confintMSmix <- function(object, conf_level = 0.95){
   if (emMSmix_out$partial_data) {
     stop("The function assumes that the fitted dataset is composed of full rankings only.\n")
   }
-  n_items <- ncol(emMSmix_out$mod$rho)
+
   theta_mle <- emMSmix_out$mod$theta
   n_clust <- length(theta_mle)
-  if (n_clust == 1) {
-    rankings <- emMSmix_out$em_settings$rankings
-    N <- nrow(rankings)
-  }else {
-    N <- colSums(emMSmix_out$mod$z_hat)
-  }
+
+  SE <- seMSmix(object=object)
+
   z_level <- qnorm((1 - conf_level)/2, lower.tail = FALSE)
-  se_theta <- ci_t_l <- ci_t_u <- rep(NA, n_clust)
-  for (g in 1:n_clust) {
-    Vardist <- var_spear_dist(theta_mle[g], n_items, log = FALSE)
-    se_theta[g] <- 1/sqrt(N[g] * Vardist)
-    ci_t_l[g] <- max(0, round(theta_mle[g] - (z_level * se_theta[g]),
-                              3))
-    ci_t_u[g] <- round(theta_mle[g] + (z_level * se_theta[g]),
-                       3)
+
+  # CI for theta
+  ci_t_l <- theta_mle - z_level * SE$se_theta
+  if(any(ci_t_l<0)){
+    #    warning(paste0("Negative lower bound of the ",100 * conf_level ,"%CI for some precisions"))
+    neg_ci_t_l <- which(ci_t_l<0)
+    ci_t_l[neg_ci_t_l] <- 0
   }
+
+  ci_t_u <- theta_mle + z_level * SE$se_theta
+
   ci_theta <- cbind(ci_t_l, ci_t_u)
   colnames(ci_theta) <- c("lower", "upper")
   rownames(ci_theta) <- paste0("Group", 1:n_clust)
+
+  # CI for weights
   if (n_clust > 1) {
     weights_mle <- emMSmix_out$mod$weights
-    se_w <- 1/sqrt((N/weights_mle^2)[-n_clust] + (N/weights_mle^2)[n_clust])
-    se_w <- c(se_w, sqrt(sum(se_w[1:(n_clust - 1)]^2)))
-    ci_w_l <- weights_mle - (z_level * se_w/sqrt(N))
-    ci_w_u <- weights_mle + (z_level * se_w/sqrt(N))
+    ci_w_l <- weights_mle - z_level * SE$se_weights
+    ci_w_u <- weights_mle + z_level * SE$se_weights
     ci_weights <- cbind(ci_w_l, ci_w_u)
     ci_weights[ci_weights < 0] <- 0
     ci_weights[ci_weights > 1] <- 1
     colnames(ci_weights) <- c("lower", "upper")
     rownames(ci_weights) <- paste0("Group", 1:n_clust)
-    ci_weights <- round(ci_weights, 3)
   }
-  cat("\n")
-  cat(paste0("Hessian-based ",100 * conf_level , "%CIs for the precisions:\n"))
-  cat("\n")
-  print(ci_theta)
-  cat("\n")
+
+  out <- list(ci_theta = ci_theta,
+              ci_weights = (if (n_clust > 1) ci_weights else NULL))
+  return(out)
+
+}# list with: a 1*2 matrix and a NULL element (when n_clust=1) or
+#            two n_clust*2 matrices (when n_clust>1)
+
+
+
+# seMSmoe ----
+#' Standard errors for mixtures of Mallows models with Spearman distance
+#'
+#' @description Return the (Hessian-based) standard errors of the continuous parameters of a mixture of Mallow models with Spearman distance fitted to full rankings, namely the component-specific precisions and weights.
+#'
+#' @details The current implementation of the standard errors assumes that the observed rankings are complete.
+#'
+#' @param object An object of class \code{"emMSmoe"} returned by \code{\link{fitMSmoe}}.
+#' @param conf_level Value in the interval (0,1] indicating the desired confidence level of the interval estimates. Defaults to 0.95.
+#'
+#'
+#' @return A list with the following named components:
+#'
+#' \item{\code{ci_theta}}{The confidence intervals for the precision parameters.}
+#' \item{\code{ci_weights}}{The confidence intervals for the mixture weights (when \eqn{G>1}), otherwise \code{NULL}.}
+#'
+#' @references
+#' Crispino M, Mollica C and Modugno L (2024+). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
+#'
+#' Marden JI (1995). Analyzing and modeling rank data. \emph{Monographs on Statistics and Applied Probability} (64). Chapman & Hall, ISSN: 0-412-99521-2. London.
+#'
+#' McLachlan G and Peel D (2000). Finite Mixture Models. \emph{Wiley Series in Probability and Statistics}, John Wiley & Sons.
+#'
+#'
+#' @examples
+#'
+#' ## Example 1. Simulate rankings from a 2-component mixture of Mallow models
+#' ## with Spearman distance.
+#' set.seed(123)
+#' d_sim <- rMSmoe(sample_size = 75, n_items = 8, n_clust = 2)
+#' rankings <- d_sim$samples
+#' # Fit the basic Mallows model with Spearman distance.
+#' set.seed(123)
+#' fit1 <- fitMSmoe(rankings = rankings, n_clust = 1, n_start = 10)
+#' # Compute the hessian-based confidence intervals for the MLEs of the precision.
+#' confintMSmoe(object = fit1)
+#' # Fit the true model.
+#' set.seed(123)
+#' fit2 <- fitMSmoe(rankings = rankings, n_clust = 2, n_start = 10)
+#' # Compute the hessian-based confidence intervals for the MLEs of the weights and precisions.
+#' confintMSmoe(object = fit2)
+#'
+#' @export
+#'
+seMSmoe <- function(object){
+  emMSmoe_out <- object
+  if (!is(emMSmoe_out, "emMSmoe")) {
+    stop("The function requires an object of S3 class 'emMSmoe' as its first argument.\n")
+  }
+  if (emMSmoe_out$partial_data) {
+    stop("The function assumes that the fitted dataset is composed of full rankings only.\n")
+  }
+
+  rankings <- emMSmoe_out$em_settings$rankings
+  N <- nrow(rankings)
+
+  rho_mle = emMSmoe_out$mod$rho
+  n_items <- ncol(rho_mle)
+  dist_mat <- apply(rho_mle,1,spear_dist,rankings=rankings) # N vector (when n_clust=1) or N*n_clust matrix (when n_clust>1)
+
+  theta_mle <- emMSmoe_out$mod$theta
+  n_clust <- length(theta_mle)
+  expect_dist <- sapply(theta_mle,expected_spear_dist, n_items=n_items, log = FALSE) # n_clust vector
+
+  if (n_clust == 1){
+    # Score function for theta
+    score_theta <- score_funct <- -(dist_mat-expect_dist) # N vector
+
+  }else{
+
+    z_hat_mle <- emMSmoe_out$mod$z_hat
+    # Score function for theta
+    score_theta <- -z_hat_mle*(dist_mat-matrix(expect_dist, nrow=N, ncol=n_clust, byrow=TRUE)) # N*n_clust matrix
+    # Score function for betas
+    X <- emMSmoe_out$em_settings$X
+    n_coeff <- ncol(X)
+    betas_mle <- emMSmoe_out$mod$betas
+    weights_mle <- exp(X%*%t(betas_mle))
+    weights_mle <- prop.table(weights_mle,1)
+    diff_z_w <- z_hat_mle-weights_mle
+    score_betas <- matrix(apply(diff_z_w,2,function(x)X*x),nrow=N,ncol=n_coeff*n_clust)[,-c(1:n_coeff),drop=FALSE] # N times n_coeff*(n_clust-1) matrix
+
+    score_funct <- cbind(score_theta, score_betas) # N times n_clust + n_coeff*(n_clust-1) matrix
+
+  }
+
+  # Approximate empirical information matrix
+  approx_emp_info <- t(score_funct)%*%score_funct # 1 times 1 matrix (when n_clust=1) n_clust + n_coeff*(n_clust-1) times n_clust + n_coeff*(n_clust-1) matrix (when n_clust>1)
+
+  # SE
+  var_cov_mat <- solve(approx_emp_info)
+  var_vec <- diag(var_cov_mat)
+  approx_se <- sqrt(var_vec)
+  se_theta <- approx_se[1:n_clust]
+
   if (n_clust > 1){
-    cat("\n")
-    cat(paste0("Hessian-based ",100 * conf_level, "%CIs for the mixture weights:\n"))
-    cat("\n")
-    print(ci_weights)
-    cat("\n")
+    se_betas <- matrix(approx_se[-c(1:n_clust)],nrow=(n_clust-1),ncol=n_coeff,byrow=TRUE)
+    colnames(se_betas) <- (if (n_coeff > 1) c("Intercept",paste0("X", 1:(n_coeff-1))) else "Intercept")
+    rownames(se_betas) <- paste0("Group", 2:n_clust)
   }
-  invisible(list(ci_theta = ci_theta, ci_weights = (if (n_clust >
-                                                        1) ci_weights else NULL)))
 
-}
+  out <- list(se_theta = se_theta,
+              se_betas = (if (n_clust > 1) se_betas else NULL))
+
+  return(out)
+
+} # list with: a positive scalar and a NULL element (when n_clust=1) or
+#            two vectors of length n_clust (when n_clust>1)
 
 
+# confintMSmoe ----
+#' Hessian-based confidence intervals for mixtures of Mallows models with Spearman distance
+#'
+#' @description Return the Hessian-based confidence intervals of the continuous parameters of a mixture of Mallow models with Spearman distance fitted to full rankings, namely the component-specific precisions and weights.
+#'
+#' @details The current implementation of the hessian-based confidence intervals assumes that the observed rankings are complete.
+#'
+#' @param object An object of class \code{"emMSmoe"} returned by \code{\link{fitMSmoe}}.
+#' @param conf_level Value in the interval (0,1] indicating the desired confidence level of the interval estimates. Defaults to 0.95.
+#'
+#'
+#' @return A list with the following named components:
+#'
+#' \item{\code{ci_theta}}{The confidence intervals for the precision parameters.}
+#' \item{\code{ci_weights}}{The confidence intervals for the mixture weights (when \eqn{G>1}), otherwise \code{NULL}.}
+#'
+#' @references
+#' Crispino M, Mollica C and Modugno L (2024+). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
+#'
+#' Marden JI (1995). Analyzing and modeling rank data. \emph{Monographs on Statistics and Applied Probability} (64). Chapman & Hall, ISSN: 0-412-99521-2. London.
+#'
+#' McLachlan G and Peel D (2000). Finite Mixture Models. \emph{Wiley Series in Probability and Statistics}, John Wiley & Sons.
+#'
+#'
+#' @examples
+#'
+#' ## Example 1. Simulate rankings from a 2-component mixture of Mallow models
+#' ## with Spearman distance.
+#' set.seed(123)
+#' d_sim <- rMSmix(sample_size = 75, n_items = 8, n_clust = 2)
+#' rankings <- d_sim$samples
+#' # Fit the basic Mallows model with Spearman distance.
+#' set.seed(123)
+#' fit1 <- fitMSmix(rankings = rankings, n_clust = 1, n_start = 10)
+#' # Compute the hessian-based confidence intervals for the MLEs of the precision.
+#' confintMSmix(object = fit1)
+#' # Fit the true model.
+#' set.seed(123)
+#' fit2 <- fitMSmix(rankings = rankings, n_clust = 2, n_start = 10)
+#' # Compute the hessian-based confidence intervals for the MLEs of the weights and precisions.
+#' confintMSmix(object = fit2)
+#'
+#' @export
+#'
+confintMSmoe <- function(object, conf_level = 0.95){
+
+  emMSmoe_out <- object
+  if (!is(emMSmoe_out, "emMSmoe")) {
+    stop("The function requires an object of S3 class 'emMSmoe' as its first argument.\n")
+  }
+  if (emMSmoe_out$partial_data) {
+    stop("The function assumes that the fitted dataset is composed of full rankings only.\n")
+  }
+
+  theta_mle <- emMSmoe_out$mod$theta
+  n_clust <- length(theta_mle)
+
+  SE <- seMSmoe(object=object)
+
+  z_level <- qnorm((1 - conf_level)/2, lower.tail = FALSE)
+
+  # CI for theta
+  ci_t_l <- theta_mle - z_level * SE$se_theta
+  if(any(ci_t_l<0)){
+    neg_ci_t_l <- which(ci_t_l<0)
+    ci_t_l[neg_ci_t_l] <- 0
+  }
+
+  ci_t_u <- theta_mle + z_level * SE$se_theta
+
+  ci_theta <- cbind(ci_t_l, ci_t_u)
+  colnames(ci_theta) <- c("lower", "upper")
+  rownames(ci_theta) <- paste0("Group", 1:n_clust)
+
+  # CI for betas
+  if (n_clust > 1) {
+    X <- emMSmoe_out$em_settings$X
+    n_coeff <- ncol(X)
+    betas_mle <- emMSmoe_out$mod$betas[-1,,drop=FALSE]
+    ci_betas_l <- betas_mle - z_level * SE$se_betas
+    ci_betas_u <- betas_mle + z_level * SE$se_betas
+    colnames(ci_betas_l) <- (if (n_coeff > 1) c("Intercept",paste0("X", 1:(n_coeff-1))) else "Intercept")
+    rownames(ci_betas_l) <- rownames(ci_betas_u) <- paste0("Group", 2:n_clust)
+  }
+
+  out <- list(ci_theta = ci_theta,
+              ci_betas_lower = (if (n_clust > 1) ci_betas_l else NULL),
+              ci_betas_upper = (if (n_clust > 1) ci_betas_u else NULL))
+  return(out)
+
+}# list with: a 1*2 matrix and two NULL elements (when n_clust=1) or
+#            a n_clust*2 matrix and two (n_clust-1)*n_coeff matrices (when n_clust>1)
