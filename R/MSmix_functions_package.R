@@ -272,7 +272,7 @@ data_augmentation <- function(rankings,
 #' @return Integer \eqn{N}\eqn{\times}{x}\eqn{n} matrix with the completed rankings in each row.
 #'
 #' @references
-#' Crispino M, Mollica C and Modugno L (2024+). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
+#' Crispino M, Mollica C and Modugno L (2025). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
 #'
 #' @examples
 #'
@@ -952,7 +952,7 @@ rMSmix <- function(sample_size = 1,
 #'  \item{\code{classification}}{Integer vector of the \code{sample_size} component membership labels.}
 #'
 #' @references
-#' Crispino M, Modugno L and Mollica C (2024+). Integrating covariates in mixtures of Mallows models with Spearman distance for analysing preference rankings.
+#' Crispino M, Modugno L and Mollica C (2025). Integrating covariates in mixtures of Mallows models with Spearman distance for analysing preference rankings.
 #'
 #' Vitelli V, Sørensen Ø, Crispino M, Frigessi A and Arjas E (2018). Probabilistic Preference Learning with the Mallows Rank Model. \emph{Journal of Machine Learning Research}, \bold{18}(158), pages 1--49, ISSN: 1532-4435, \href{https://jmlr.org/papers/v18/15-481.html}{https://jmlr.org/papers/v18/15-481.html}.
 #'
@@ -2184,7 +2184,7 @@ lik_completeMSmoe <- function(rho, theta, weights, rankings, log = TRUE) {
 #' @return The (log)-likelihood value.
 #'
 #' @references
-#' Crispino M, Mollica C and Modugno L (2024+). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
+#' Crispino M, Mollica C and Modugno L (2025). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
 #'
 #' Crispino M, Mollica C, Astuti V and Tardella L (2023). Efficient and accurate inference for mixtures of Mallows models with Spearman distance. \emph{Statistics and Computing}, \bold{33}(98), DOI: 10.1007/s11222-023-10266-8.
 #'
@@ -2299,9 +2299,9 @@ likMSmix <- function(rho, theta, weights=(if(length(theta)==1) NULL),
 #' @return The (log)-likelihood value.
 #'
 #' @references
-#' Crispino M, Modugno L and Mollica C (2024+). Integrating covariates in mixtures of Mallows models with Spearman distance for analysing preference rankings.
+#' Crispino M, Modugno L and Mollica C (2025). Integrating covariates in mixtures of Mallows models with Spearman distance for analysing preference rankings.
 #'
-#' Crispino M, Mollica C and Modugno L (2024+). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
+#' Crispino M, Mollica C and Modugno L (2025). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
 #'
 #' Crispino M, Mollica C, Astuti V and Tardella L (2023). Efficient and accurate inference for mixtures of Mallows models with Spearman distance. \emph{Statistics and Computing}, \bold{33}(98), DOI: 10.1007/s11222-023-10266-8.
 #'
@@ -2453,7 +2453,7 @@ likMSmoe <- function(rho, theta, betas, rankings, X, log = TRUE) {
 #'
 #'
 #' @references
-#' Crispino M, Mollica C and Modugno L (2024+). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
+#' Crispino M, Mollica C and Modugno L (2025). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
 #'
 #' Crispino M, Mollica C, Astuti V and Tardella L (2023). Efficient and accurate inference for mixtures of Mallows models with Spearman distance. \emph{Statistics and Computing}, \bold{33}(98), DOI: 10.1007/s11222-023-10266-8.
 #'
@@ -2552,9 +2552,9 @@ bicMSmix <- function(rho, theta, weights, rankings) {
 #'
 #'
 #' @references
-#' Crispino M, Modugno L and Mollica C (2024+). Integrating covariates in mixtures of Mallows models with Spearman distance for analysing preference rankings.
+#' Crispino M, Modugno L and Mollica C (2025). Integrating covariates in mixtures of Mallows models with Spearman distance for analysing preference rankings.
 #'
-#' Crispino M, Mollica C and Modugno L (2024+). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
+#' Crispino M, Mollica C and Modugno L (2025). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
 #'
 #' Crispino M, Mollica C, Astuti V and Tardella L (2023). Efficient and accurate inference for mixtures of Mallows models with Spearman distance. \emph{Statistics and Computing}, \bold{33}(98), DOI: 10.1007/s11222-023-10266-8.
 #'
@@ -3277,7 +3277,7 @@ em_db_moe <- function(rankings_orig,
 #' supported up to 10 missing positions in the partial rankings.
 #'
 #' When \code{mc_em = TRUE}, the - computationally more efficient - Monte Carlo EM algorithm
-#' introduced by Crispino et al. (2024+) is implemented. In the case of a large number
+#' introduced by Crispino et al. (2025) is implemented. In the case of a large number
 #' of censored positions and sample sizes, the \code{mc_em = TRUE} must be preferred.
 #'
 #' Regardless of the fitting method adopted for inference on partial rankings, note that
@@ -3333,7 +3333,7 @@ em_db_moe <- function(rankings_orig,
 #'  }
 #'
 #' @references
-#' Crispino M, Mollica C and Modugno L (2024+). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
+#' Crispino M, Mollica C and Modugno L (2025). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
 #'
 #' Crispino M, Mollica C, Astuti V and Tardella L (2023). Efficient and accurate inference for mixtures of Mallows models with Spearman distance. \emph{Statistics and Computing}, \bold{33}(98), DOI: 10.1007/s11222-023-10266-8.
 #'
@@ -3789,9 +3789,9 @@ fitMSmix <- function(rankings,
 #'  }
 #'
 #' @references
-#' Crispino M, Modugno L and Mollica C (2024+). Integrating covariates in mixtures of Mallows models with Spearman distance for analyzing preference rankings.
+#' Crispino M, Modugno L and Mollica C (2025). Integrating covariates in mixtures of Mallows models with Spearman distance for analyzing preference rankings.
 #'
-#' Crispino M, Mollica C and Modugno L (2024+). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
+#' Crispino M, Mollica C and Modugno L (2025). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
 #'
 #' Crispino M, Mollica C, Astuti V and Tardella L (2023). Efficient and accurate inference for mixtures of Mallows models with Spearman distance. \emph{Statistics and Computing}, \bold{33}(98), DOI: 10.1007/s11222-023-10266-8.
 #'
@@ -4774,7 +4774,7 @@ plot.emMSmoe <- function(x, max_scale_w = 20, mar_lr = 0.4, mar_tb = 0.2, ...) {
 #' \code{type = "parametric"}, where the latter supports full rankings only.
 #'
 #' When \code{n_clust > 1}, two types of bootstrap are available: 1) \code{type = "soft"} (default), which is
-#' the soft-separated bootstrap (Crispino et al., 2024+) and returns confidence intervals for all
+#' the soft-separated bootstrap (Crispino et al., 2025) and returns confidence intervals for all
 #' the parameters of the mixture of Mallow models with Spearman distance; 2) \code{type = "separated"}, which is the separated bootstrap
 #' (Taushanov and Berchtold, 2019) and returns bootstrap samples for the component-specific
 #' consensus rankings and precisions.
@@ -4806,7 +4806,7 @@ plot.emMSmoe <- function(x, max_scale_w = 20, mar_lr = 0.4, mar_tb = 0.2, ...) {
 #'
 #' @references
 #'
-#' Crispino M, Mollica C and Modugno L (2024+). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
+#' Crispino M, Mollica C and Modugno L (2025). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
 #'
 #' Taushanov Z and Berchtold A (2019). Bootstrap validation of the estimated parameters in mixture models used for clustering. \emph{Journal de la société française de statistique}, \bold{160}(1).
 #'
@@ -5404,7 +5404,7 @@ plot.bootMSmix <- function(x, ...) {
 #'
 #' @details
 #' Two types of bootstrap are available: 1) \code{type = "soft"} (default), which is
-#' the soft-separated bootstrap (Crispino et al., 2024+) and returns confidence intervals for all
+#' the soft-separated bootstrap (Crispino et al., 2025) and returns confidence intervals for all
 #' the parameters of the mixture of experts of Mallow models with Spearman distance; 2) \code{type = "separated"}, which is the separated bootstrap
 #' (Taushanov and Berchtold, 2019) and returns bootstrap samples only for the component-specific
 #' consensus rankings and precisions.
@@ -5436,7 +5436,7 @@ plot.bootMSmix <- function(x, ...) {
 #'
 #' @references
 #'
-#' Crispino M, Mollica C and Modugno L (2024+). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
+#' Crispino M, Mollica C and Modugno L (2025). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
 #'
 #' Taushanov Z and Berchtold A (2019). Bootstrap validation of the estimated parameters in mixture models used for clustering. \emph{Journal de la société française de statistique}, \bold{160}(1).
 #'
@@ -5844,7 +5844,7 @@ plot.bootMSmoe <- function(x, ...) {
 #'
 #' @details The current implementation of the standard errors assumes that the observed rankings are complete.
 #'
-#' @param object An object of class \code{"emMSmoe"} returned by \code{\link{fitMSmoe}}.
+#' @param object An object of class \code{"emMSmix"} returned by \code{\link{fitMSmix}}.
 #' @param conf_level Value in the interval (0,1] indicating the desired confidence level of the interval estimates. Defaults to 0.95.
 #'
 #'
@@ -5854,7 +5854,7 @@ plot.bootMSmoe <- function(x, ...) {
 #' \item{\code{ci_weights}}{The confidence intervals for the mixture weights (when \eqn{G>1}), otherwise \code{NULL}.}
 #'
 #' @references
-#' Crispino M, Mollica C and Modugno L (2024+). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
+#' Crispino M, Mollica C and Modugno L (2025). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
 #'
 #' Marden JI (1995). Analyzing and modeling rank data. \emph{Monographs on Statistics and Applied Probability} (64). Chapman & Hall, ISSN: 0-412-99521-2. London.
 #'
@@ -5866,18 +5866,18 @@ plot.bootMSmoe <- function(x, ...) {
 #' ## Example 1. Simulate rankings from a 2-component mixture of Mallow models
 #' ## with Spearman distance.
 #' set.seed(123)
-#' d_sim <- rMSmoe(sample_size = 75, n_items = 8, n_clust = 2)
+#' d_sim <- rMSmix(sample_size = 75, n_items = 8, n_clust = 2)
 #' rankings <- d_sim$samples
 #' # Fit the basic Mallows model with Spearman distance.
 #' set.seed(123)
-#' fit1 <- fitMSmoe(rankings = rankings, n_clust = 1, n_start = 10)
+#' fit1 <- fitMSmix(rankings = rankings, n_clust = 1, n_start = 10)
 #' # Compute the hessian-based confidence intervals for the MLEs of the precision.
-#' confintMSmoe(object = fit1)
+#' confintMSmix(object = fit1)
 #' # Fit the true model.
 #' set.seed(123)
-#' fit2 <- fitMSmoe(rankings = rankings, n_clust = 2, n_start = 10)
+#' fit2 <- fitMSmix(rankings = rankings, n_clust = 2, n_start = 10)
 #' # Compute the hessian-based confidence intervals for the MLEs of the weights and precisions.
-#' confintMSmoe(object = fit2)
+#' confintMSmix(object = fit2)
 #'
 #' @export
 #'
@@ -5963,7 +5963,7 @@ seMSmix <- function(object){
 #' \item{\code{ci_weights}}{The confidence intervals for the mixture weights (when \eqn{G>1}), otherwise \code{NULL}.}
 #'
 #' @references
-#' Crispino M, Mollica C and Modugno L (2024+). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
+#' Crispino M, Mollica C and Modugno L (2025). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
 #'
 #' Marden JI (1995). Analyzing and modeling rank data. \emph{Monographs on Statistics and Applied Probability} (64). Chapman & Hall, ISSN: 0-412-99521-2. London.
 #'
@@ -6034,11 +6034,51 @@ confintMSmix <- function(object, conf_level = 0.95){
   }
 
   out <- list(ci_theta = ci_theta,
-              ci_weights = (if (n_clust > 1) ci_weights else NULL))
+              ci_weights = (if (n_clust > 1) ci_weights else NULL),
+              conf_level = conf_level)
+
+  class(out) <- "confintMSmix"
+
   return(out)
 
 }# list with: a 1*2 matrix and a NULL element (when n_clust=1) or
 #            two n_clust*2 matrices (when n_clust>1)
+
+
+# print.confintMSmix ----
+#' Print of the hessian confidence intervals for mixtures of Mallows models with Spearman distance
+#'
+#' @description \code{print} method for class \code{"confintMSmix"}.
+#'
+#'
+#' @param x An object of class \code{"confintMSmix"} returned by \code{\link{confintMSmix}}.
+#' @param ... Further arguments passed to or from other methods (not used).
+#'
+#' @rdname confintMSmix
+#'
+#' @export print.confintMSmix
+#' @export
+#'
+print.confintMSmix <- function(x, ...) {
+
+  confintMSmix_out <- x
+
+  if (!is(confintMSmix_out, "confintMSmix")) {
+    stop("The function requires an object of S3 class 'confintMSmix' as its first argument.\n")
+  }
+
+  cat(paste0("Hessian-based ", 100*confintMSmix_out$conf_level, "%CIs for the precisions:\n"))
+  cat("\n")
+  print(round(confintMSmix_out$ci_theta,3))
+  cat("\n")
+  cat("\n")
+  cat(paste0("Hessian-based ", 100*confintMSmix_out$conf_level, "%CIs for the mixture weights:\n"))
+  cat("\n")
+  print(round(confintMSmix_out$ci_weights,3))
+  cat("\n")
+  invisible(x)
+
+}
 
 
 
@@ -6059,7 +6099,7 @@ confintMSmix <- function(object, conf_level = 0.95){
 #' \item{\code{ci_weights}}{The confidence intervals for the mixture weights (when \eqn{G>1}), otherwise \code{NULL}.}
 #'
 #' @references
-#' Crispino M, Mollica C and Modugno L (2024+). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
+#' Crispino M, Mollica C and Modugno L (2025). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
 #'
 #' Marden JI (1995). Analyzing and modeling rank data. \emph{Monographs on Statistics and Applied Probability} (64). Chapman & Hall, ISSN: 0-412-99521-2. London.
 #'
@@ -6152,6 +6192,7 @@ seMSmoe <- function(object){
 #            two vectors of length n_clust (when n_clust>1)
 
 
+
 # confintMSmoe ----
 #' Hessian-based confidence intervals for mixtures of Mallows models with Spearman distance
 #'
@@ -6169,7 +6210,7 @@ seMSmoe <- function(object){
 #' \item{\code{ci_weights}}{The confidence intervals for the mixture weights (when \eqn{G>1}), otherwise \code{NULL}.}
 #'
 #' @references
-#' Crispino M, Mollica C and Modugno L (2024+). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
+#' Crispino M, Mollica C and Modugno L (2025). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
 #'
 #' Marden JI (1995). Analyzing and modeling rank data. \emph{Monographs on Statistics and Applied Probability} (64). Chapman & Hall, ISSN: 0-412-99521-2. London.
 #'
@@ -6226,6 +6267,7 @@ confintMSmoe <- function(object, conf_level = 0.95){
   colnames(ci_theta) <- c("lower", "upper")
   rownames(ci_theta) <- paste0("Group", 1:n_clust)
 
+
   # CI for betas
   if (n_clust > 1) {
     X <- emMSmoe_out$em_settings$X
@@ -6237,10 +6279,126 @@ confintMSmoe <- function(object, conf_level = 0.95){
     rownames(ci_betas_l) <- rownames(ci_betas_u) <- paste0("Group", 2:n_clust)
   }
 
+  ci_betas <- cbind(c(ci_betas_l),c(ci_betas_u))
+  colnames(ci_betas) <- c("lower", "upper")
+  groups <- paste0("Group", 2:n_clust)
+  coeffs <- (if (n_coeff > 1) c("Intercept",paste0("X", 1:(n_coeff-1))) else "Intercept")
+  labs <- expand.grid(groups, coeffs)
+  rownames(ci_betas) <- paste0(labs$Var1, ", ", labs$Var2)
+
   out <- list(ci_theta = ci_theta,
-              ci_betas_lower = (if (n_clust > 1) ci_betas_l else NULL),
-              ci_betas_upper = (if (n_clust > 1) ci_betas_u else NULL))
+              ci_betas = (if (n_clust > 1) ci_betas else NULL),
+              conf_level = conf_level)
+
+  class(out) <- "confintMSmoe"
+
   return(out)
 
 }# list with: a 1*2 matrix and two NULL elements (when n_clust=1) or
 #            a n_clust*2 matrix and two (n_clust-1)*n_coeff matrices (when n_clust>1)
+
+
+# print.confintMSmoe ----
+#' Print of the hessian confidence intervals for mixtures of experts of Mallows models with Spearman distance
+#'
+#' @description \code{print} method for class \code{"confintMSmoe"}.
+#'
+#'
+#' @param x An object of class \code{"confintMSmoe"} returned by \code{\link{confintMSmoe}}.
+#' @param ... Further arguments passed to or from other methods (not used).
+#'
+#' @rdname confintMSmoe
+#'
+#' @export confintMSmoe
+#' @export
+#'
+print.confintMSmoe <- function(x, ...) {
+
+  confintMSmoe_out <- x
+
+  if (!is(confintMSmoe_out, "confintMSmoe")) {
+    stop("The function requires an object of S3 class 'confintMSmoe' as its first argument.\n")
+  }
+
+  cat(paste0("Hessian-based ", 100*confintMSmoe_out$conf_level, "%CIs for the precisions:\n"))
+  cat("\n")
+  print(round(confintMSmoe_out$ci_theta,3))
+  cat("\n")
+  cat("\n")
+  cat(paste0("Hessian-based ", 100*confintMSmoe_out$conf_level, "%CIs for the GLM coefficients:\n"))
+  cat("\n")
+  print(round(confintMSmoe_out$ci_betas,3))
+  cat("\n")
+  invisible(x)
+
+}
+
+# rearrange_output_mix ----
+#' Arrange the output of emMSmim for label switching
+#'
+#'
+#' @param x An object of class \code{"emMSmix"} returned by \code{\link{fitMSmix}}.
+#' @param ord vector of length n_clust with the desired ordering
+#'
+#' @export rearrange_output_mix
+#' @export
+#'
+
+
+rearrange_output_mix <- function(output, ord){
+
+
+  if (!is(output, "emMSmix")) {
+    stop("The function requires an object of S3 class 'emMSmix' as its first argument.\n")
+  }
+
+  output_switched <- output
+  output_switched$mod$rho <- output$mod$rho[ord,]
+  output_switched$mod$theta <- output$mod$theta[ord]
+  output_switched$mod$weights <- output$mod$weights[ord]
+  output_switched$mod$z_hat <- output$mod$z_hat[,ord]
+
+  class<-output$mod$map_classification
+  n_clust <- output$em_settings$n_clust
+  for(k in 1:n_clust) class[which(output$mod$map_classification==ord[k])] <- k
+
+  output_switched$mod$map_classification <- class
+
+  invisible(output_switched)
+}
+
+
+# rearrange_output_moe ----
+#' Arrange the output of emMSmoe for label switching
+#'
+#'
+#' @param x An object of class \code{"emMSmoe"} returned by \code{\link{fitMSmoe}}.
+#' @param ord vector of length n_clust with the desired ordering
+#'
+#' @export rearrange_output_moe
+#' @export
+#'
+
+
+rearrange_output_moe <- function(output, ord){
+
+
+  if (!is(output, "emMSmoe")) {
+    stop("The function requires an object of S3 class 'emMSmoe' as its first argument.\n")
+  }
+
+  output_switched <- output
+  output_switched$mod$rho <- output$mod$rho[ord,]
+  output_switched$mod$theta <- output$mod$theta[ord]
+  output_switched$mod$betas <- order_beta(output$mod$betas[ord,],1)
+  output_switched$mod$z_hat <- output$mod$z_hat[,ord]
+
+  class<-output$mod$map_classification
+  n_clust <- output$em_settings$n_clust
+  for(k in 1:n_clust) class[which(output$mod$map_classification==ord[k])] <- k
+
+  output_switched$mod$map_classification <- class
+
+  invisible(output_switched)
+}
+
