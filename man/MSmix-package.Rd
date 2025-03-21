@@ -93,7 +93,7 @@ under the uniform (null) model.}
 \describe{
 \item{\code{\link{ranks_antifragility}}}{Antifragility features of innovative startups (full rankings with covariates).}
 \item{\code{\link{ranks_horror}}}{Arkham Horror data (full rankings).}
-\item{\code{\link{ranks_beers}}}{Beer preference data (partial missing at random rankings with covariate).}
+\item{\code{\link{ranks_beers}}}{Beers data (partial rankings with different censoring patterns and a covariate).}
 \item{\code{\link{ranks_read_genres}}}{Reading preference data (partial top-5 rankings with covariates).}
 \item{\code{\link{ranks_sports}}}{Sport preferences and habits (full rankings with covariates).}
 }

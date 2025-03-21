@@ -5,7 +5,7 @@
 \description{The Beers dataset was collected through an on-line survey on beer preferences administrated to the participants of the 2018 Pint of Science festival held in Grenoble. A sample of \eqn{N=105} respondents provided their partial rankings of \eqn{n=20} beers according to their personal preferences. The dataset also includes a covariate concerning respondents' residence.}
 \usage{data(ranks_beers)}
 \format{
-A data frame gathering \eqn{N=105} partial rankings of the beers in the first \eqn{n=20} columns (rank 1 = most preferred item) and an individual covariate in the last column. Partial rankings have missing at random positions coded as \code{NA}. The variables are detailed below:
+A data frame gathering \eqn{N=105} partial rankings of the beers in the first \eqn{n=20} columns (rank 1 = most preferred item) and an individual covariate in the last column. The partial rankings are characterized by different censoring patterns (that is, not exclusively top sequences), with missing positions coded as \code{NA}. The variables are detailed below:
 \describe{
 \item{Stella}{Rank assigned to Stella Artois.}
 \item{Kwak}{Rank assigned to Kwak Brasserie.}
