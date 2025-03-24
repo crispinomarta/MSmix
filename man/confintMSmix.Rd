@@ -26,7 +26,7 @@ An object of class \code{"ciMSmix"}, namely a list with the following named comp
 }
 }
 \description{
-Return the asymptotic confidence intervals of the continuous parameters (component-specific precisions and weights) of a mixture of Mallow models with Spearman distance fitted to full rankings.
+Return the asymptotic confidence intervals of the continuous parameters (component-specific precisions and weights) of a mixture of Mallows models with Spearman distance fitted to full rankings.
 
 \code{print} method for class \code{"ciMSmix"}.
 }
@@ -35,7 +35,7 @@ The current implementation of the asymptotic confidence intervals assumes that t
 }
 \examples{
 
-## Example 1. Simulate rankings from a 2-component mixture of Mallow models
+## Example 1. Simulate rankings from a 2-component mixture of Mallows models
 ## with Spearman distance.
 set.seed(123)
 d_sim <- rMSmix(sample_size = 75, n_items = 8, n_clust = 2)

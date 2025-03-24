@@ -18,13 +18,13 @@
 \item{...}{Further arguments passed to or from other methods (not used).}
 }
 \value{
-A list of 2 labelled plots, namely: i) \code{bump_plot}: a bump plot comparing the component-specific consensus rankings of the fitted mixture of Mallow models with Spearman distance (the size of the dots of each consensus ranking is proportional to the weight of the corresponding component); and ii) \code{est_clust_prob}: a heatmap of the estimated component membership probabilities is returned when \code{n_clust > 1}, otherwise \code{NULL}.
+A list of 2 labelled plots, namely: i) \code{bump_plot}: a bump plot comparing the component-specific consensus rankings of the fitted mixture of Mallows models with Spearman distance (the size of the dots of each consensus ranking is proportional to the weight of the corresponding component); and ii) \code{est_clust_prob}: a heatmap of the estimated component membership probabilities is returned when \code{n_clust > 1}, otherwise \code{NULL}.
 }
 \description{
 \code{plot} method for class \code{"emMSmix"}.
 }
 \examples{
-## Example 1. Fit and plot a 3-component mixture of Mallow models with Spearman distance
+## Example 1. Fit and plot a 3-component mixture of Mallows models with Spearman distance
 ## to the Antifragility dataset.
 r_antifrag <- ranks_antifragility[, 1:7]
 set.seed(123)

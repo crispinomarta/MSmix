@@ -27,7 +27,7 @@ likMSmix(
 The (log)-likelihood value.
 }
 \description{
-Compute the (log-)likelihood for the parameters of a mixture of Mallow models with Spearman distance on partial rankings.
+Compute the (log-)likelihood for the parameters of a mixture of Mallows models with Spearman distance on partial rankings.
 Partial rankings with missing data in arbitrary positions are supported.
 }
 \details{
@@ -42,7 +42,7 @@ likMSmix(rho = 1:5, theta = 0, weights = 1, rankings = c(3,5,2,1,4), log = FALSE
 # corresponds to...
 1/factorial(5)
 
-## Example 2. Simulate rankings from a 2-component mixture of Mallow models
+## Example 2. Simulate rankings from a 2-component mixture of Mallows models
 ## with Spearman distance.
 set.seed(12345)
 d_sim <- rMSmix(sample_size = 75, n_items = 8, n_clust = 2)
@@ -56,7 +56,7 @@ likMSmix(rho = d_sim$rho, theta = d_sim$theta, weights = d_sim$weights,
 likMSmix(rho = fit$mod$rho, theta = fit$mod$theta, weights = fit$mod$weights,
        rankings = d_sim$samples)
 
-## Example 3. Simulate rankings from a basic Mallow model with Spearman distance.
+## Example 3. Simulate rankings from a basic Mallows model with Spearman distance.
 set.seed(12345)
 d_sim <- rMSmix(sample_size = 25, n_items = 6)
 str(d_sim)

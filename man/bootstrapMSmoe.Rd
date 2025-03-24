@@ -59,14 +59,14 @@ For the component-specific precisions a kernel density plot is returned.
 For the GLM parameters a box-plot is returned.
 }
 \description{
-Return the bootstrap confidence intervals for the parameters of a mixture of experts of Mallow models with Spearman distance fitted on full or partial rankings.
+Return the bootstrap confidence intervals for the parameters of a mixture of experts of Mallows models with Spearman distance fitted on full or partial rankings.
 
 \code{plot} method for class \code{"bootMSmoe"}.
 }
 \details{
 Two types of bootstrap are available: 1) \code{type = "soft"} (default), which is
 the soft-separated bootstrap (Crispino et al., 2025) and returns confidence intervals for all
-the parameters of the mixture of experts of Mallow models with Spearman distance; 2) \code{type = "separated"}, which is the separated bootstrap
+the parameters of the mixture of experts of Mallows models with Spearman distance; 2) \code{type = "separated"}, which is the separated bootstrap
 (Taushanov and Berchtold, 2019) and returns bootstrap samples only for the component-specific
 consensus rankings and precisions.
 }

@@ -108,21 +108,21 @@ The EM algorithms are launched from \code{n_start} initializations and the best 
 log-likelihood value (based on full or augmented rankings) is returned.
 }
 \examples{
-## Example 1. Fit the 3-component mixture of Mallow models with Spearman distance
+## Example 1. Fit the 3-component mixture of Mallows models with Spearman distance
 ## to the Antifragility dataset.
 r_antifrag <- ranks_antifragility[, 1:7]
 set.seed(123)
 mms_fit <- fitMSmix(rankings = r_antifrag, n_clust = 3, n_start = 10)
 mms_fit$mod$rho; mms_fit$mod$theta; mms_fit$mod$weights
 
-## Example 2. Fit the Mallow model with Spearman distance
+## Example 2. Fit the Mallows model with Spearman distance
 ## to simulated partial rankings through data augmentation.
 rank_data <- rbind(c(NA, 4, NA, 1, NA), c(NA, NA, NA, NA, 1), c(2, NA, 1, NA, 3),
                    c(4, 2, 3, 5, 1), c(NA, 4, 1, 3, 2))
 mms_fit <- fitMSmix(rankings = rank_data, n_start = 10)
 mms_fit$mod$rho; mms_fit$mod$theta
 
-## Example 3. Fit the Mallow model with Spearman distance
+## Example 3. Fit the Mallows model with Spearman distance
 ## to the Reading genres dataset through Monte Carlo EM.
 top5_read <- ranks_read_genres[, 1:11]
 mms_fit <- fitMSmix(rankings = top5_read, n_start = 10, mc_em = TRUE)

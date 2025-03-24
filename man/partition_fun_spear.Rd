@@ -14,15 +14,15 @@ partition_fun_spear(theta, n_items, log = TRUE)
 \item{log}{Logical: whether the partition function must be returned on the log scale. Defaults to \code{TRUE}.}
 }
 \value{
-Either the exact or the approximate (log-)partition function of the Mallow model with Spearman distance.
+Either the exact or the approximate (log-)partition function of the Mallows model with Spearman distance.
 }
 \description{
-Compute (either the exact or the approximate) (log-)partition function of the Mallow model with Spearman distance.
+Compute (either the exact or the approximate) (log-)partition function of the Mallows model with Spearman distance.
 }
 \details{
 When \eqn{n\leq 20}, the partition function is exactly computed by relying on the Spearman distance distribution provided by OEIS Foundation Inc. (2023). When \eqn{n>20}, it is approximated with the method introduced by Crispino et al. (2023) and, if \eqn{n>170}, the approximation is also restricted over a fixed grid of values for the Spearman distance to limit computational burden.
 
-The partition function is independent of the consensus ranking of the Mallow model with Spearman distance due to the right-invariance of the metric. When \eqn{\theta=0}, the partition function is equivalent to \eqn{n!}, which is the normalizing constant of the uniform (null) model.
+The partition function is independent of the consensus ranking of the Mallows model with Spearman distance due to the right-invariance of the metric. When \eqn{\theta=0}, the partition function is equivalent to \eqn{n!}, which is the normalizing constant of the uniform (null) model.
 }
 \examples{
 
@@ -30,24 +30,24 @@ The partition function is independent of the consensus ranking of the Mallow mod
 partition_fun_spear(theta = 0, n_items = 10, log = FALSE)
 factorial(10)
 
-## Example 2. Partition function of the Mallow model with Spearman distance.
+## Example 2. Partition function of the Mallows model with Spearman distance.
 partition_fun_spear(theta = 0.5, n_items = 10, log = FALSE)
 
-## Example 3. Log-partition function of the Mallow model with Spearman distance
+## Example 3. Log-partition function of the Mallows model with Spearman distance
 ## as a function of theta.
 partition_fun_spear_vec <- Vectorize(partition_fun_spear, vectorize.args = "theta")
 curve(partition_fun_spear_vec(x, n_items = 10), from = 0, to = 0.1, lwd = 2,
   xlab = expression(theta), ylab = expression(log(Z(theta))),
-  main = "Log-partition function of the Mallow model with Spearman distance",
+  main = "Log-partition function of the Mallows model with Spearman distance",
   ylim = c(7, log(factorial(10))))
 
-## Example 4. Log-partition function of the Mallow model with Spearman distance
+## Example 4. Log-partition function of the Mallows model with Spearman distance
 ## for varying number of items and values of the concentration parameter.
 partition_fun_spear_vec <- Vectorize(partition_fun_spear, vectorize.args = "theta")
 curve(partition_fun_spear_vec(x, n_items = 10),
   from = 0, to = 0.1, lwd = 2, col = 2,
   xlab = expression(theta), ylab = expression(log(Z(theta))),
-  main = "Log-partition function of the Mallow model with Spearman distance",
+  main = "Log-partition function of the Mallows model with Spearman distance",
   ylim = c(0, log(factorial(30))))
 curve(partition_fun_spear_vec(x, n_items = 20), add = TRUE, col = 3, lwd = 2)
 curve(partition_fun_spear_vec(x, n_items = 30), add = TRUE, col = 4, lwd = 2)

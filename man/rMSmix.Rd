@@ -42,7 +42,7 @@ A list of the following named components:
 \item{\code{classification}}{Integer vector of the \code{sample_size} component membership labels.}
 }
 \description{
-Draw random samples of full rankings from a mixture of Mallow models with Spearman distance.
+Draw random samples of full rankings from a mixture of Mallows models with Spearman distance.
 }
 \details{
 When \code{n_items > 10} or \code{mh = TRUE}, the random samples are obtained by using the Metropolis-Hastings algorithm, described in Vitelli et al. (2018) and implemented in the \code{sample_mallows} function of the package \code{BayesMallows} package.

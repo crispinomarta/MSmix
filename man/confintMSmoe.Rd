@@ -25,7 +25,7 @@ A list with the following named components:
 \item{\code{ci_weights}}{The confidence intervals for the mixture weights (when \eqn{G>1}), otherwise \code{NULL}.}
 }
 \description{
-Return the Hessian-based confidence intervals of the continuous parameters of a mixture of Mallow models with Spearman distance fitted to full rankings, namely the component-specific precisions and weights.
+Return the Hessian-based confidence intervals of the continuous parameters of a mixture of Mallows models with Spearman distance fitted to full rankings, namely the component-specific precisions and weights.
 
 \code{print} method for class \code{"confintMSmoe"}.
 }
@@ -34,7 +34,7 @@ The current implementation of the hessian-based confidence intervals assumes tha
 }
 \examples{
 
-## Example 1. Simulate rankings from a 2-component mixture of Mallow models
+## Example 1. Simulate rankings from a 2-component mixture of Mallows models
 ## with Spearman distance.
 set.seed(123)
 d_sim <- rMSmix(sample_size = 75, n_items = 8, n_clust = 2)

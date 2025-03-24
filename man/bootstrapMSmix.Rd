@@ -55,7 +55,7 @@ The \code{boot} sublist contains the following named components:
 A list of 3 labelled plots, namely: i) \code{rho_heatmap}: a heatmap for the component-specific bootstrap consensus ranking estimates (when \code{n_clust > 1}, this is in turn a list of heatmaps for each consensus ranking estimate); ii) \code{theta_density}: a kernel density plot for the component-specific bootstrap precision estimates; iii) \code{weights_density}: a kernel density plot for the bootstrap mixture weight estimates is returned when \code{n_clust > 1} and the object \code{x} was obtained from the \code{bootstrapMSmix} routine with the argument \code{type = "soft"}, otherwise \code{NULL}.
 }
 \description{
-Return the bootstrap confidence intervals for the parameters of a mixture of Mallow models with Spearman distance fitted on partial rankings.
+Return the bootstrap confidence intervals for the parameters of a mixture of Mallows models with Spearman distance fitted on partial rankings.
 
 \code{plot} method for class \code{"bootMSmix"}.
 }
@@ -65,7 +65,7 @@ When \code{n_clust = 1}, two types of bootstrap are available: 1) \code{type = "
 
 When \code{n_clust > 1}, two types of bootstrap are available: 1) \code{type = "soft"} (default), which is
 the soft-separated bootstrap (Crispino et al., 2025+) and returns confidence intervals for all
-the parameters of the mixture of Mallow models with Spearman distance; 2) \code{type = "separated"}, which is the separated bootstrap
+the parameters of the mixture of Mallows models with Spearman distance; 2) \code{type = "separated"}, which is the separated bootstrap
 (Taushanov and Berchtold, 2019) and returns bootstrap samples for the component-specific
 consensus rankings and precisions.
 }

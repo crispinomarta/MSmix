@@ -18,7 +18,7 @@
 \item{...}{Further arguments passed to or from other methods (not used).}
 }
 \value{
-Produce a bump plot to compare the component-specific consensus rankings of the fitted mixture of Mallow models with Spearman distance. The size of the dots of each consensus ranking is proportional to the weight of the corresponding component. When \code{n_clust > 1}, It also returns a heatmap of the estimated coponent membership probabilities.
+Produce a bump plot to compare the component-specific consensus rankings of the fitted mixture of Mallows models with Spearman distance. The size of the dots of each consensus ranking is proportional to the weight of the corresponding component. When \code{n_clust > 1}, It also returns a heatmap of the estimated coponent membership probabilities.
 }
 \description{
 \code{plot} method for class \code{"emMSmoe"}.

@@ -14,15 +14,15 @@ expected_spear_dist(theta, n_items, log = TRUE)
 \item{log}{Logical: whether the expected Spearman distance on the log scale must be returned. Defaults to \code{TRUE}.}
 }
 \value{
-Either the exact or the approximate (log-)expected value of the Spearman distance under the Mallow model with Spearman distance.
+Either the exact or the approximate (log-)expected value of the Spearman distance under the Mallows model with Spearman distance.
 }
 \description{
-Compute (either the exact or the approximate) (log-)expectation of the Spearman distance under the Mallow model with Spearman distance.
+Compute (either the exact or the approximate) (log-)expectation of the Spearman distance under the Mallows model with Spearman distance.
 }
 \details{
 When \eqn{n\leq 20}, the expectation is exactly computed by relying on the Spearman distance distribution provided by OEIS Foundation Inc. (2023). When \eqn{n>20}, it is approximated with the method introduced by Crispino et al. (2023) and, if \eqn{n>170}, the approximation is also restricted over a fixed grid of values for the Spearman distance to limit computational burden.
 
-The expected Spearman distance is independent of the consensus ranking of the Mallow model with Spearman distance due to the right-invariance of the metric. When \eqn{\theta=0}, this is equal to \eqn{\frac{n^3-n}{6}}, which is the expectation of the Spearman distance under the uniform (null) model.
+The expected Spearman distance is independent of the consensus ranking of the Mallows model with Spearman distance due to the right-invariance of the metric. When \eqn{\theta=0}, this is equal to \eqn{\frac{n^3-n}{6}}, which is the expectation of the Spearman distance under the uniform (null) model.
 }
 \examples{
 

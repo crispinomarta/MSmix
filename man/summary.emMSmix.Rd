@@ -37,7 +37,7 @@ A list with the following named components:
 \code{print} method for class \code{"summary.emMSmix"}.
 }
 \examples{
-## Example 1. Fit and summary of a 3-component mixture of Mallow models with Spearman distance
+## Example 1. Fit and summary of a 3-component mixture of Mallows models with Spearman distance
 ## for the Antifragility dataset.
 r_antifrag <- ranks_antifragility[, 1:7]
 set.seed(123)

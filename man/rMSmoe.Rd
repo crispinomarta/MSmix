@@ -43,10 +43,10 @@ A list of the following named components:
 \item{\code{classification}}{Integer vector of the \code{sample_size} component membership labels.}
 }
 \description{
-Draw random samples of full rankings from a mixture of experts of Mallow models with Spearman distance.
+Draw random samples of full rankings from a mixture of experts of Mallows models with Spearman distance.
 }
 \details{
-The case with a single mixture component (\eqn{G=1}) implies that covariates are not allowed and coincides with the homogeneous Mallow models with Spearman distance. The case with multiple mixture components (\eqn{G>1}) and absence of covariates coincides with the mixture of MMS, thus the functions is equivalent to \code{rMSmix}.
+The case with a single mixture component (\eqn{G=1}) implies that covariates are not allowed and coincides with the homogeneous Mallows models with Spearman distance. The case with multiple mixture components (\eqn{G>1}) and absence of covariates coincides with the mixture of MMS, thus the functions is equivalent to \code{rMSmix}.
 
 When \code{n_items > 10} or \code{mh = TRUE}, the random samples are obtained by using the Metropolis-Hastings algorithm, described in Vitelli et al. (2018) and implemented in the \code{sample_mallows} function of the package \code{BayesMallows} package.
 

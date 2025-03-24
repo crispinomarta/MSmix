@@ -24,10 +24,10 @@ aicMSmoe(rho, theta, betas, rankings, X)
 The BIC or AIC value.
 }
 \description{
-\code{bicMSmoe} and \code{aicMSmoe} compute, respectively, the Bayesian Information Criterion (BIC) and the Akaike Information Criterion (AIC) for a \eqn{G}-component mixture of experts of Mallow models with Spearman distance fitted on partial rankings.
+\code{bicMSmoe} and \code{aicMSmoe} compute, respectively, the Bayesian Information Criterion (BIC) and the Akaike Information Criterion (AIC) for a \eqn{G}-component mixture of experts of Mallows models with Spearman distance fitted on partial rankings.
 }
 \details{
-The case with a single mixture component (\eqn{G=1}) implies that covariates are not allowed and coincides with the homogeneous Mallow models with Spearman distance. The case with multiple mixture components (\eqn{G>1}) and absence of covariates coincides with the mixture of MMS, thus the functions are equivalent to \code{bicMSmix} and \code{aicMSmix}.
+The case with a single mixture component (\eqn{G=1}) implies that covariates are not allowed and coincides with the homogeneous Mallows models with Spearman distance. The case with multiple mixture components (\eqn{G>1}) and absence of covariates coincides with the mixture of MMS, thus the functions are equivalent to \code{bicMSmix} and \code{aicMSmix}.
 
 The (log-)likelihood evaluation is performed by augmenting the partial rankings with the set of all compatible full rankings (see \code{\link{data_augmentation}}), and then the marginal likelihood is computed.
 
@@ -35,7 +35,7 @@ When \eqn{n\leq 20}, the (log-)likelihood is exactly computed, otherwise it is a
 }
 \examples{
 
-## Example 1. Simulate rankings from a 2-component mixture of Mallow models
+## Example 1. Simulate rankings from a 2-component mixture of Mallows models
 ## with Spearman distance.
 set.seed(12345)
 rank_sim <- rMSmix(sample_size = 50, n_items = 12, n_clust = 2)
@@ -55,7 +55,7 @@ aicMSmix(rho = fit$mod$rho, theta = fit$mod$theta, weights = fit$mod$weights,
        rankings = rank_sim$samples)
 
 
-## Example 2. Simulate rankings from a basic Mallow model with Spearman distance.
+## Example 2. Simulate rankings from a basic Mallows model with Spearman distance.
 set.seed(54321)
 rank_sim <- rMSmix(sample_size = 50, n_items = 8, n_clust = 1)
 str(rank_sim)
