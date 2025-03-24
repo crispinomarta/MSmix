@@ -279,10 +279,6 @@ data_augmentation <- function(rankings,
   return(out)
 } # list of N elements which are all matrices with n columns and an arbitrary number of rows
 
-
-
-
-# data_completion ----
 # data_completion ----
 #' Completion of partial rankings with reference full rankings
 #'
@@ -1362,7 +1358,7 @@ data_censoring <- function(rankings, topk = TRUE, nranked = NULL, probs = rep(1,
 #' @references
 #' Sørensen Ø, Crispino M, Liu Q and Vitelli V (2020). BayesMallows: An R Package for the Bayesian Mallows Model. \emph{The R Journal}, \bold{12}(1), pages 324--342, DOI: 10.32614/RJ-2020-026.
 #'
-#' @seealso  \code{\link{plot.dist}}, \code{\link[BayesMallows]{compute_rank_distance}}
+#' @seealso  \code{\link{plot.dist}}
 #'
 #' @examples
 #'
