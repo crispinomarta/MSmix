@@ -522,7 +522,7 @@ myorder_new <- function(x, n_items) {
 #'
 #' The implementation of \code{data_description} is similar to that of \code{rank_summaries} from the \code{PLMIX} package. Differently from the latter, \code{data_description} works with any kind of partial rankings (not only top rankings) and allows to summarize subsamples thanks to the additional \code{subset} argument.
 #'
-#' The Borda ranking, obtained from the ordering of the mean rank vector, corresponds to the MLE of the consensus ranking of the Mallow model with Spearman distance. If \code{mean_rank} contains some \code{NA}s, the corresponding items occupy the bottom positions in the \code{borda_ordering} according to the order they appear in \code{item_names}.
+#' The Borda ranking, obtained from the ordering of the mean rank vector, corresponds to the MLE of the consensus ranking of the Mallows model with Spearman distance. If \code{mean_rank} contains some \code{NA}s, the corresponding items occupy the bottom positions in the \code{borda_ordering} according to the order they appear in \code{item_names}.
 #'
 #' @param rankings Integer \eqn{N}\eqn{\times}{x}\eqn{n} matrix or data frame with partial rankings in each row. Missing positions must be coded as \code{NA}.
 #' @param marg Logical: whether the first-order marginals have to be computed. Defaults to \code{TRUE}.
@@ -872,7 +872,7 @@ suppress_ggplot <- function(plot) {
 # rMSmix ----
 #' Random samples from a mixture of Mallows models with Spearman distance
 #'
-#' @description Draw random samples of full rankings from a mixture of Mallow models with Spearman distance.
+#' @description Draw random samples of full rankings from a mixture of Mallows models with Spearman distance.
 #'
 #' @details
 #' When \code{n_items > 10} or \code{mh = TRUE}, the random samples are obtained by using the Metropolis-Hastings algorithm, described in Vitelli et al. (2018) and implemented in the \code{sample_mallows} function of the package \code{BayesMallows} package.
@@ -1025,10 +1025,10 @@ rMSmix <- function(sample_size = 1,
 # rMSmoe ----
 #' Random samples from a MoE of Mallows models with Spearman distance
 #'
-#' @description Draw random samples of full rankings from a mixture of experts of Mallow models with Spearman distance.
+#' @description Draw random samples of full rankings from a mixture of experts of Mallows models with Spearman distance.
 #'
 #' @details
-#' The case with a single mixture component (\eqn{G=1}) implies that covariates are not allowed and coincides with the homogeneous Mallow models with Spearman distance. The case with multiple mixture components (\eqn{G>1}) and absence of covariates coincides with the mixture of MMS, thus the functions is equivalent to \code{rMSmix}.
+#' The case with a single mixture component (\eqn{G=1}) implies that covariates are not allowed and coincides with the homogeneous Mallows models with Spearman distance. The case with multiple mixture components (\eqn{G>1}) and absence of covariates coincides with the mixture of MMS, thus the functions is equivalent to \code{rMSmix}.
 #'
 #' When \code{n_items > 10} or \code{mh = TRUE}, the random samples are obtained by using the Metropolis-Hastings algorithm, described in Vitelli et al. (2018) and implemented in the \code{sample_mallows} function of the package \code{BayesMallows} package.
 #'
@@ -1552,13 +1552,13 @@ spear_dist_distr <- function(n_items, log = TRUE) {
 # log_partition_fun_spear ----
 #/' Utility for the exported partition_fun_spear
 #/'
-#/' Compute (either the exact or the approximate) logarithm of the partition function of the Mallow model with Spearman distance.
+#/' Compute (either the exact or the approximate) logarithm of the partition function of the Mallows model with Spearman distance.
 #/'
 #/' @keywords internal
 #/' @param theta Non-negative precision parameter.
 #/' @param n_items Number of items.
 #/'
-#/' @return The log-partition function of the Mallow models with Spearman distance.
+#/' @return The log-partition function of the Mallows models with Spearman distance.
 #/'
 log_partition_fun_spear <- function(theta, n_items) {
   out <- suppressMessages(spear_dist_distr(n_items))
@@ -1574,18 +1574,18 @@ log_partition_fun_spear <- function(theta, n_items) {
 # partition_fun_spear ----
 #' Partition function of the Mallows model with Spearman distance
 #'
-#' @description Compute (either the exact or the approximate) (log-)partition function of the Mallow model with Spearman distance.
+#' @description Compute (either the exact or the approximate) (log-)partition function of the Mallows model with Spearman distance.
 #'
 #' @details
 #' When \eqn{n\leq 20}, the partition function is exactly computed by relying on the Spearman distance distribution provided by OEIS Foundation Inc. (2023). When \eqn{n>20}, it is approximated with the method introduced by Crispino et al. (2023) and, if \eqn{n>170}, the approximation is also restricted over a fixed grid of values for the Spearman distance to limit computational burden.
 #'
-#' The partition function is independent of the consensus ranking of the Mallow model with Spearman distance due to the right-invariance of the metric. When \eqn{\theta=0}, the partition function is equivalent to \eqn{n!}, which is the normalizing constant of the uniform (null) model.
+#' The partition function is independent of the consensus ranking of the Mallows model with Spearman distance due to the right-invariance of the metric. When \eqn{\theta=0}, the partition function is equivalent to \eqn{n!}, which is the normalizing constant of the uniform (null) model.
 #'
 #' @param theta Non-negative precision parameter.
 #' @param n_items Number of items.
 #' @param log Logical: whether the partition function must be returned on the log scale. Defaults to \code{TRUE}.
 #'
-#' @return Either the exact or the approximate (log-)partition function of the Mallow model with Spearman distance.
+#' @return Either the exact or the approximate (log-)partition function of the Mallows model with Spearman distance.
 #'
 #' @references
 #' Crispino M, Mollica C, Astuti V and Tardella L (2023). Efficient and accurate inference for mixtures of Mallows models with Spearman distance. \emph{Statistics and Computing}, \bold{33}(98), DOI: 10.1007/s11222-023-10266-8.
@@ -1600,24 +1600,24 @@ log_partition_fun_spear <- function(theta, n_items) {
 #' partition_fun_spear(theta = 0, n_items = 10, log = FALSE)
 #' factorial(10)
 #'
-#' ## Example 2. Partition function of the Mallow model with Spearman distance.
+#' ## Example 2. Partition function of the Mallows model with Spearman distance.
 #' partition_fun_spear(theta = 0.5, n_items = 10, log = FALSE)
 #'
-#' ## Example 3. Log-partition function of the Mallow model with Spearman distance
+#' ## Example 3. Log-partition function of the Mallows model with Spearman distance
 #' ## as a function of theta.
 #' partition_fun_spear_vec <- Vectorize(partition_fun_spear, vectorize.args = "theta")
 #' curve(partition_fun_spear_vec(x, n_items = 10), from = 0, to = 0.1, lwd = 2,
 #'   xlab = expression(theta), ylab = expression(log(Z(theta))),
-#'   main = "Log-partition function of the Mallow model with Spearman distance",
+#'   main = "Log-partition function of the Mallows model with Spearman distance",
 #'   ylim = c(7, log(factorial(10))))
 #'
-#' ## Example 4. Log-partition function of the Mallow model with Spearman distance
+#' ## Example 4. Log-partition function of the Mallows model with Spearman distance
 #' ## for varying number of items and values of the concentration parameter.
 #' partition_fun_spear_vec <- Vectorize(partition_fun_spear, vectorize.args = "theta")
 #' curve(partition_fun_spear_vec(x, n_items = 10),
 #'   from = 0, to = 0.1, lwd = 2, col = 2,
 #'   xlab = expression(theta), ylab = expression(log(Z(theta))),
-#'   main = "Log-partition function of the Mallow model with Spearman distance",
+#'   main = "Log-partition function of the Mallows model with Spearman distance",
 #'   ylim = c(0, log(factorial(30))))
 #' curve(partition_fun_spear_vec(x, n_items = 20), add = TRUE, col = 3, lwd = 2)
 #' curve(partition_fun_spear_vec(x, n_items = 30), add = TRUE, col = 4, lwd = 2)
@@ -1643,13 +1643,13 @@ partition_fun_spear <- function(theta, n_items, log = TRUE) {
 # log_expect_spear_dist ----
 #/' Utility for the exported expected_spear_dist
 #/'
-#/' Compute (either the exact or the approximate) log-expectation of the Spearman distance under the Mallow model with Spearman distance.
+#/' Compute (either the exact or the approximate) log-expectation of the Spearman distance under the Mallows model with Spearman distance.
 #/'
 #/' @keywords internal
 #/' @param theta Non-negative precision parameter.
 #/' @param n_items Number of items.
 #/'
-#/' @return The log-expected value of the Spearman distance under the Mallow model with Spearman distance.
+#/' @return The log-expected value of the Spearman distance under the Mallows model with Spearman distance.
 #/'
 log_expect_spear_dist <- function(theta, n_items) {
 
@@ -1667,18 +1667,18 @@ log_expect_spear_dist <- function(theta, n_items) {
 # expected_spear_dist ----
 #' Expectation of the Spearman distance
 #'
-#' @description Compute (either the exact or the approximate) (log-)expectation of the Spearman distance under the Mallow model with Spearman distance.
+#' @description Compute (either the exact or the approximate) (log-)expectation of the Spearman distance under the Mallows model with Spearman distance.
 #'
 #' @details
 #' When \eqn{n\leq 20}, the expectation is exactly computed by relying on the Spearman distance distribution provided by OEIS Foundation Inc. (2023). When \eqn{n>20}, it is approximated with the method introduced by Crispino et al. (2023) and, if \eqn{n>170}, the approximation is also restricted over a fixed grid of values for the Spearman distance to limit computational burden.
 #'
-#' The expected Spearman distance is independent of the consensus ranking of the Mallow model with Spearman distance due to the right-invariance of the metric. When \eqn{\theta=0}, this is equal to \eqn{\frac{n^3-n}{6}}, which is the expectation of the Spearman distance under the uniform (null) model.
+#' The expected Spearman distance is independent of the consensus ranking of the Mallows model with Spearman distance due to the right-invariance of the metric. When \eqn{\theta=0}, this is equal to \eqn{\frac{n^3-n}{6}}, which is the expectation of the Spearman distance under the uniform (null) model.
 #'
 #' @param theta Non-negative precision parameter.
 #' @param n_items Number of items.
 #' @param log Logical: whether the expected Spearman distance on the log scale must be returned. Defaults to \code{TRUE}.
 #'
-#' @return Either the exact or the approximate (log-)expected value of the Spearman distance under the Mallow model with Spearman distance.
+#' @return Either the exact or the approximate (log-)expected value of the Spearman distance under the Mallows model with Spearman distance.
 #'
 #' @references
 #' Crispino M, Mollica C, Astuti V and Tardella L (2023). Efficient and accurate inference for mixtures of Mallows models with Spearman distance. \emph{Statistics and Computing}, \bold{33}(98), DOI: 10.1007/s11222-023-10266-8.
@@ -1738,18 +1738,18 @@ expected_spear_dist <- function(theta, n_items, log = TRUE) {
 # var_spear_dist ----
 #' Variance of the Spearman distance
 #'
-#' @description Compute (either the exact or the approximate) (log-)variance of the Spearman distance under the Mallow model with Spearman distance.
+#' @description Compute (either the exact or the approximate) (log-)variance of the Spearman distance under the Mallows model with Spearman distance.
 #'
 #' @details
 #' When \eqn{n\leq 20}, the variance is exactly computed by relying on the Spearman distance distribution provided by OEIS Foundation Inc. (2023). When \eqn{n>20}, it is approximated with the method introduced by Crispino et al. (2023) and, if \eqn{n>170}, the approximation is also restricted over a fixed grid of values for the Spearman distance to limit computational burden.
 #'
-#' The variance of the Spearman distance is independent of the consensus ranking of the Mallow model with Spearman distance due to the right-invariance of the metric. When \eqn{\theta=0}, this is equal to \eqn{\frac{n^2(n-1)(n+1)^2}{36}}, which is the variance of the Spearman distance under the uniform (null) model.
+#' The variance of the Spearman distance is independent of the consensus ranking of the Mallows model with Spearman distance due to the right-invariance of the metric. When \eqn{\theta=0}, this is equal to \eqn{\frac{n^2(n-1)(n+1)^2}{36}}, which is the variance of the Spearman distance under the uniform (null) model.
 #'
 #' @param theta Non-negative precision parameter.
 #' @param n_items Number of items.
 #' @param log Logical: whether the expected Spearman distance on the log scale must be returned. Defaults to \code{TRUE}.
 #'
-#' @return Either the exact or the approximate (log-)variance of the Spearman distance under the Mallow model with Spearman distance.
+#' @return Either the exact or the approximate (log-)variance of the Spearman distance under the Mallows model with Spearman distance.
 #'
 #' @references
 #' Crispino M., Mollica C., Astuti V. and Tardella L. (2023). Efficient and accurate inference for mixtures of Mallows models with Spearman distance. \emph{Statistics and Computing}, \bold{33}(98), DOI: 10.1007/s11222-023-10266-8.
@@ -2199,7 +2199,7 @@ get_log_card_approx_spearman_grid <- function (n_items) {
 # log_part_funct_spear_hide ----
 #/' Utility for the internal log_lik_inter_spearman and estn
 #/'
-#/' Compute (either the exact or the approximate) logarithm of the partition function of the Mallow model with Spearman distance.
+#/' Compute (either the exact or the approximate) logarithm of the partition function of the Mallows model with Spearman distance.
 #/'
 #/' Although this internal routine parallels the utility \code{log_partition_fun_spear}, it allows to speed up the iterative log-likelihood evaluation and E-step in the EM algorithm.
 #/'
@@ -2208,7 +2208,7 @@ get_log_card_approx_spearman_grid <- function (n_items) {
 #/' @param distances Numeric vector of all the possible Spearman distance values.
 #/' @param logcardest Numeric vector of log-frequencies corresponding to each value in \code{distances}.
 #/'
-#/' @return The log-partition function of the Mallow models with Spearman distance.
+#/' @return The log-partition function of the Mallows models with Spearman distance.
 #/'
 log_part_funct_spear_hide <- function(theta, distances, logcardest) {
   tmp <- logcardest - theta * distances
@@ -2221,7 +2221,7 @@ log_part_funct_spear_hide <- function(theta, distances, logcardest) {
 # log_lik_inter_spearman ----
 #/' Utility for several likelihood-related internal functions
 #/'
-#/' Compute the log-likelihood values for each distinct COMPLETE ranking under each component-specific (basic) Mallow model with Spearman distance.
+#/' Compute the log-likelihood values for each distinct COMPLETE ranking under each component-specific (basic) Mallows model with Spearman distance.
 #/'
 #/' This routine allows to speed up the iterative log-likelihood evaluation in the EM algorithm.
 #/'
@@ -2250,7 +2250,7 @@ log_lik_inter_spearman <- function(rho, theta, rankings, cardinalities) {
 # log_lik_db_mix ----
 #/' Utility for the internal em_db_mix
 #/'
-#/' Compute the log-likelihood value for the parameters of a mixture of Mallow models with Spearman distance on COMPLETE rankings ONLY.
+#/' Compute the log-likelihood value for the parameters of a mixture of Mallows models with Spearman distance on COMPLETE rankings ONLY.
 #/'
 #/' This routine allows to speed up the iterative log-likelihood evaluation in the EM algorithm.
 #/'
@@ -2289,7 +2289,7 @@ log_lik_db_moe <- function(rho, theta, weights, rankings, freq_compl, cardinalit
 # log_lik_db_mix_partial ----
 #/' Utility for the internal lik_partialMSmix and the log-likelihood evaluation in the EM algorithm.
 #/'
-#/' Compute the log-likelihood value for the parameters of a mixture of Mallow models with Spearman distance on PARTIAL rankings ONLY. The partial observations are augmented with the set of all possible compatible full rankings to allow the computation of the marginal likelihood.
+#/' Compute the log-likelihood value for the parameters of a mixture of Mallows models with Spearman distance on PARTIAL rankings ONLY. The partial observations are augmented with the set of all possible compatible full rankings to allow the computation of the marginal likelihood.
 #/'
 #/' @keywords internal
 #/' @param rho Integer \eqn{G}\eqn{\times}{x}\eqn{n} matrix with the component-specific consensus rankings in each row.
@@ -2346,7 +2346,7 @@ log_lik_db_moe_partial <- function(rho,
 # lik_partialMSmix ----
 #/' Utility for the exported likMSmix
 #/'
-#/' Compute the (log-)likelihood value for the parameters of a mixture of Mallow models with Spearman distance on PARTIAL rankings ONLY. The partial observations are augmented with the set of all possible compatible full rankings to allow the computation of the marginal likelihood.
+#/' Compute the (log-)likelihood value for the parameters of a mixture of Mallows models with Spearman distance on PARTIAL rankings ONLY. The partial observations are augmented with the set of all possible compatible full rankings to allow the computation of the marginal likelihood.
 #/'
 #/' @keywords internal
 #/' @param rho Integer \eqn{G}\eqn{\times}{x}\eqn{n} matrix with the component-specific consensus rankings in each row.
@@ -2427,7 +2427,7 @@ lik_partialMSmoe <- function(rho, theta, weights, rankings, log = TRUE) {
 # LoglikInterMSmix ----
 #/' Utility for the internal LoglikMSmix
 #/'
-#/' Compute the log-likelihood values for each distinct COMPLETE ranking under each component-specific (basic) Mallow model with Spearman distance.
+#/' Compute the log-likelihood values for each distinct COMPLETE ranking under each component-specific (basic) Mallows model with Spearman distance.
 #/'
 #/' @keywords internal
 #/' @param rho Integer \eqn{G}\eqn{\times}{x}\eqn{n} matrix with the component-specific consensus rankings in each row.
@@ -2448,7 +2448,7 @@ LoglikInterMSmix <- function(rho, theta, rankings) {
 # LoglikMSmix ----
 #/' Utility for the internal lik_completeMSmix
 #/'
-#/' Compute the log-likelihood value for the parameters of a mixture of Mallow models with Spearman distance on COMPLETE rankings ONLY.
+#/' Compute the log-likelihood value for the parameters of a mixture of Mallows models with Spearman distance on COMPLETE rankings ONLY.
 #/'
 #/' @keywords internal
 #/' @param rho Integer \eqn{G}\eqn{\times}{x}\eqn{n} matrix with the component-specific consensus rankings in each row.
@@ -2478,7 +2478,7 @@ LoglikMSmoe <- function(rho, theta, weights, rankings, obs_freq) {
 # lik_completeMSmix ----
 #/' Utility for the exported likMSmix
 #/'
-#/' Compute the (log-)likelihood for the parameters of a mixture of Mallow models with Spearman distance on COMPLETE rankings ONLY.
+#/' Compute the (log-)likelihood for the parameters of a mixture of Mallows models with Spearman distance on COMPLETE rankings ONLY.
 #/'
 #/' @keywords internal
 #/' @param rho Integer \eqn{G}\eqn{\times}{x}\eqn{n} matrix with the component-specific consensus rankings in each row.
@@ -2532,7 +2532,7 @@ lik_completeMSmoe <- function(rho, theta, weights, rankings, log = TRUE) {
 # likMSmix ----
 #' (Log-)likelihood for mixtures of Mallows models with Spearman distance
 #'
-#' @description Compute the (log-)likelihood for the parameters of a mixture of Mallow models with Spearman distance on partial rankings.
+#' @description Compute the (log-)likelihood for the parameters of a mixture of Mallows models with Spearman distance on partial rankings.
 #' Partial rankings with missing data in arbitrary positions are supported.
 #'
 #' @details
@@ -2562,7 +2562,7 @@ lik_completeMSmoe <- function(rho, theta, weights, rankings, log = TRUE) {
 #' # corresponds to...
 #' 1/factorial(5)
 #'
-#' ## Example 2. Simulate rankings from a 2-component mixture of Mallow models
+#' ## Example 2. Simulate rankings from a 2-component mixture of Mallows models
 #' ## with Spearman distance.
 #' set.seed(12345)
 #' d_sim <- rMSmix(sample_size = 75, n_items = 8, n_clust = 2)
@@ -2576,7 +2576,7 @@ lik_completeMSmoe <- function(rho, theta, weights, rankings, log = TRUE) {
 #' likMSmix(rho = fit$mod$rho, theta = fit$mod$theta, weights = fit$mod$weights,
 #'        rankings = d_sim$samples)
 #'
-#' ## Example 3. Simulate rankings from a basic Mallow model with Spearman distance.
+#' ## Example 3. Simulate rankings from a basic Mallows model with Spearman distance.
 #' set.seed(12345)
 #' d_sim <- rMSmix(sample_size = 25, n_items = 6)
 #' str(d_sim)
@@ -2644,11 +2644,11 @@ likMSmix <- function(rho, theta, weights=(if(length(theta)==1) NULL),
 # likMSmoe ----
 #' (Log-)likelihood for the MoE of Mallows models with Spearman distance
 #'
-#' @description Compute the (log-)likelihood for the parameters of a \eqn{G}-component mixture of experts of Mallow models with Spearman distance on partial rankings.
+#' @description Compute the (log-)likelihood for the parameters of a \eqn{G}-component mixture of experts of Mallows models with Spearman distance on partial rankings.
 #' Partial rankings with arbitrary missing positions are supported.
 #'
 #' @details
-#' The case with a single mixture component (\eqn{G=1}) implies that covariates are not allowed and coincides with the homogeneous Mallow models with Spearman distance. The case with multiple mixture components (\eqn{G>1}) and absence of covariates coincides with the mixture of MMS, thus the function is equivalent to \code{likMSmix}.
+#' The case with a single mixture component (\eqn{G=1}) implies that covariates are not allowed and coincides with the homogeneous Mallows models with Spearman distance. The case with multiple mixture components (\eqn{G>1}) and absence of covariates coincides with the mixture of MMS, thus the function is equivalent to \code{likMSmix}.
 #'
 #' The (log-)likelihood evaluation is performed by augmenting the partial rankings with the set of all compatible full rankings (see \code{\link{data_augmentation}}), and then the marginal likelihood is computed.
 #'
@@ -2679,7 +2679,7 @@ likMSmix <- function(rho, theta, weights=(if(length(theta)==1) NULL),
 #' # corresponds to...
 #' 1/factorial(5)
 #'
-#' ## Example 2. Simulate rankings from a 2-component mixture of Mallow models
+#' ## Example 2. Simulate rankings from a 2-component mixture of Mallows models
 #' ## with Spearman distance.
 #' set.seed(12345)
 #' d_sim <- rMSmix(sample_size = 75, n_items = 8, n_clust = 2)
@@ -2693,7 +2693,7 @@ likMSmix <- function(rho, theta, weights=(if(length(theta)==1) NULL),
 #' likMSmix(rho = fit$mod$rho, theta = fit$mod$theta, weights = fit$mod$weights,
 #'        rankings = d_sim$samples)
 #'
-#' ## Example 3. Simulate rankings from a basic Mallow model with Spearman distance.
+#' ## Example 3. Simulate rankings from a basic Mallows model with Spearman distance.
 #' set.seed(12345)
 #' d_sim <- rMSmix(sample_size = 25, n_items = 6)
 #' str(d_sim)
@@ -2802,7 +2802,7 @@ likMSmoe <- function(rho, theta, betas, rankings, X, log = TRUE) {
 # bicMSmix ----
 #' BIC and AIC for mixtures of Mallows models with Spearman distance
 #'
-#' @description \code{bicMSmix} and \code{aicMSmix} compute, respectively, the Bayesian Information Criterion (BIC) and the Akaike Information Criterion (AIC) for a mixture of Mallow models with Spearman distance fitted on partial rankings.
+#' @description \code{bicMSmix} and \code{aicMSmix} compute, respectively, the Bayesian Information Criterion (BIC) and the Akaike Information Criterion (AIC) for a mixture of Mallows models with Spearman distance fitted on partial rankings.
 #'
 #' @details
 #' The (log-)likelihood evaluation is performed by augmenting the partial rankings with the set of all compatible full rankings (see \code{\link{data_augmentation}}), and then the marginal likelihood is computed.
@@ -2828,7 +2828,7 @@ likMSmoe <- function(rho, theta, betas, rankings, X, log = TRUE) {
 #'
 #' @examples
 #'
-#' ## Example 1. Simulate rankings from a 2-component mixture of Mallow models
+#' ## Example 1. Simulate rankings from a 2-component mixture of Mallows models
 #' ## with Spearman distance.
 #' set.seed(12345)
 #' rank_sim <- rMSmix(sample_size = 50, n_items = 12, n_clust = 2)
@@ -2848,7 +2848,7 @@ likMSmoe <- function(rho, theta, betas, rankings, X, log = TRUE) {
 #'        rankings = rank_sim$samples)
 #'
 #'
-#' ## Example 2. Simulate rankings from a basic Mallow model with Spearman distance.
+#' ## Example 2. Simulate rankings from a basic Mallows model with Spearman distance.
 #' set.seed(54321)
 #' rank_sim <- rMSmix(sample_size = 50, n_items = 8, n_clust = 1)
 #' str(rank_sim)
@@ -2898,10 +2898,10 @@ bicMSmix <- function(rho, theta, weights, rankings) {
 # bicMSmoe ----
 #' BIC and AIC for a MoE of Mallows models with Spearman distance
 #'
-#' @description \code{bicMSmoe} and \code{aicMSmoe} compute, respectively, the Bayesian Information Criterion (BIC) and the Akaike Information Criterion (AIC) for a \eqn{G}-component mixture of experts of Mallow models with Spearman distance fitted on partial rankings.
+#' @description \code{bicMSmoe} and \code{aicMSmoe} compute, respectively, the Bayesian Information Criterion (BIC) and the Akaike Information Criterion (AIC) for a \eqn{G}-component mixture of experts of Mallows models with Spearman distance fitted on partial rankings.
 #'
 #' @details
-#' The case with a single mixture component (\eqn{G=1}) implies that covariates are not allowed and coincides with the homogeneous Mallow models with Spearman distance. The case with multiple mixture components (\eqn{G>1}) and absence of covariates coincides with the mixture of MMS, thus the functions are equivalent to \code{bicMSmix} and \code{aicMSmix}.
+#' The case with a single mixture component (\eqn{G=1}) implies that covariates are not allowed and coincides with the homogeneous Mallows models with Spearman distance. The case with multiple mixture components (\eqn{G>1}) and absence of covariates coincides with the mixture of MMS, thus the functions are equivalent to \code{bicMSmix} and \code{aicMSmix}.
 #'
 #' The (log-)likelihood evaluation is performed by augmenting the partial rankings with the set of all compatible full rankings (see \code{\link{data_augmentation}}), and then the marginal likelihood is computed.
 #'
@@ -2929,7 +2929,7 @@ bicMSmix <- function(rho, theta, weights, rankings) {
 #'
 #' @examples
 #'
-#' ## Example 1. Simulate rankings from a 2-component mixture of Mallow models
+#' ## Example 1. Simulate rankings from a 2-component mixture of Mallows models
 #' ## with Spearman distance.
 #' set.seed(12345)
 #' rank_sim <- rMSmix(sample_size = 50, n_items = 12, n_clust = 2)
@@ -2949,7 +2949,7 @@ bicMSmix <- function(rho, theta, weights, rankings) {
 #'        rankings = rank_sim$samples)
 #'
 #'
-#' ## Example 2. Simulate rankings from a basic Mallow model with Spearman distance.
+#' ## Example 2. Simulate rankings from a basic Mallows model with Spearman distance.
 #' set.seed(54321)
 #' rank_sim <- rMSmix(sample_size = 50, n_items = 8, n_clust = 1)
 #' str(rank_sim)
@@ -3852,21 +3852,21 @@ em_db_moe <- function(rankings_orig,
 #' @seealso \code{\link{summary.emMSmix}}, \code{\link{plot.emMSmix}}
 #'
 #' @examples
-#' ## Example 1. Fit the 3-component mixture of Mallow models with Spearman distance
+#' ## Example 1. Fit the 3-component mixture of Mallows models with Spearman distance
 #' ## to the Antifragility dataset.
 #' r_antifrag <- ranks_antifragility[, 1:7]
 #' set.seed(123)
 #' mms_fit <- fitMSmix(rankings = r_antifrag, n_clust = 3, n_start = 10)
 #' mms_fit$mod$rho; mms_fit$mod$theta; mms_fit$mod$weights
 #'
-#' ## Example 2. Fit the Mallow model with Spearman distance
+#' ## Example 2. Fit the Mallows model with Spearman distance
 #' ## to simulated partial rankings through data augmentation.
 #' rank_data <- rbind(c(NA, 4, NA, 1, NA), c(NA, NA, NA, NA, 1), c(2, NA, 1, NA, 3),
 #'                    c(4, 2, 3, 5, 1), c(NA, 4, 1, 3, 2))
 #' mms_fit <- fitMSmix(rankings = rank_data, n_start = 10)
 #' mms_fit$mod$rho; mms_fit$mod$theta
 #'
-#' ## Example 3. Fit the Mallow model with Spearman distance
+#' ## Example 3. Fit the Mallows model with Spearman distance
 #' ## to the Reading genres dataset through Monte Carlo EM.
 #' top5_read <- ranks_read_genres[, 1:11]
 #' mms_fit <- fitMSmix(rankings = top5_read, n_start = 10, mc_em = TRUE)
@@ -4310,21 +4310,21 @@ fitMSmix <- function(rankings,
 #' @seealso \code{\link{summary.emMSmix}}, \code{\link{plot.emMSmix}}
 #'
 #' @examples
-#' ## Example 1. Fit the 3-component mixture of Mallow models with Spearman distance
+#' ## Example 1. Fit the 3-component mixture of Mallows models with Spearman distance
 #' ## to the Antifragility dataset.
 #' r_antifrag <- ranks_antifragility[, 1:7]
 #' set.seed(123)
 #' mms_fit <- fitMSmix(rankings = r_antifrag, n_clust = 3, n_start = 10)
 #' mms_fit$mod$rho; mms_fit$mod$theta; mms_fit$mod$weights
 #'
-#' ## Example 2. Fit the Mallow model with Spearman distance
+#' ## Example 2. Fit the Mallows model with Spearman distance
 #' ## to simulated partial rankings through data augmentation.
 #' rank_data <- rbind(c(NA, 4, NA, 1, NA), c(NA, NA, NA, NA, 1), c(2, NA, 1, NA, 3),
 #'                    c(4, 2, 3, 5, 1), c(NA, 4, 1, 3, 2))
 #' mms_fit <- fitMSmix(rankings = rank_data, n_start = 10)
 #' mms_fit$mod$rho; mms_fit$mod$theta
 #'
-#' ## Example 3. Fit the Mallow model with Spearman distance
+#' ## Example 3. Fit the Mallows model with Spearman distance
 #' ## to the Reading genres dataset through Monte Carlo EM.
 #' top5_read <- ranks_read_genres[, 1:11]
 #' mms_fit <- fitMSmix(rankings = top5_read, n_start = 10, mc_em = TRUE)
@@ -4803,7 +4803,7 @@ print.emMSmix <- function(x, ...) {
 #' @seealso \code{\link{fitMSmix}}, \code{\link{plot.emMSmix}}
 #'
 #' @examples
-#' ## Example 1. Fit and summary of a 3-component mixture of Mallow models with Spearman distance
+#' ## Example 1. Fit and summary of a 3-component mixture of Mallows models with Spearman distance
 #' ## for the Antifragility dataset.
 #' r_antifrag <- ranks_antifragility[, 1:7]
 #' set.seed(123)
@@ -4906,7 +4906,7 @@ print.summary.emMSmix <- function(x, ...) {
 #' @param mar_tb Numeric: margin for the bottom and top side of the plot. Defaults to 0.2.
 #' @param ... Further arguments passed to or from other methods (not used).
 #'
-#' @return A list of 2 labelled plots, namely: i) \code{bump_plot}: a bump plot comparing the component-specific consensus rankings of the fitted mixture of Mallow models with Spearman distance (the size of the dots of each consensus ranking is proportional to the weight of the corresponding component); and ii) \code{est_clust_prob}: a heatmap of the estimated component membership probabilities is returned when \code{n_clust > 1}, otherwise \code{NULL}.
+#' @return A list of 2 labelled plots, namely: i) \code{bump_plot}: a bump plot comparing the component-specific consensus rankings of the fitted mixture of Mallows models with Spearman distance (the size of the dots of each consensus ranking is proportional to the weight of the corresponding component); and ii) \code{est_clust_prob}: a heatmap of the estimated component membership probabilities is returned when \code{n_clust > 1}, otherwise \code{NULL}.
 #'
 #' @references
 #'
@@ -4920,7 +4920,7 @@ print.summary.emMSmix <- function(x, ...) {
 #' @seealso \code{\link{fitMSmix}}, \code{\link{summary.emMSmix}}
 #'
 #' @examples
-#' ## Example 1. Fit and plot a 3-component mixture of Mallow models with Spearman distance
+#' ## Example 1. Fit and plot a 3-component mixture of Mallows models with Spearman distance
 #' ## to the Antifragility dataset.
 #' r_antifrag <- ranks_antifragility[, 1:7]
 #' set.seed(123)
@@ -5174,7 +5174,7 @@ print.summary.emMSmoe <- function(x, ...) {
 #' @param mar_tb Numeric: margin for the bottom and top side of the plot. Defaults to 0.2.
 #' @param ... Further arguments passed to or from other methods (not used).
 #'
-#' @return  Produce a bump plot to compare the component-specific consensus rankings of the fitted mixture of Mallow models with Spearman distance. The size of the dots of each consensus ranking is proportional to the weight of the corresponding component. When \code{n_clust > 1}, It also returns a heatmap of the estimated coponent membership probabilities.
+#' @return  Produce a bump plot to compare the component-specific consensus rankings of the fitted mixture of Mallows models with Spearman distance. The size of the dots of each consensus ranking is proportional to the weight of the corresponding component. When \code{n_clust > 1}, It also returns a heatmap of the estimated coponent membership probabilities.
 #'
 #' @references
 #'
@@ -5270,7 +5270,7 @@ plot.emMSmoe <- function(x, max_scale_w = 20, mar_lr = 0.4, mar_tb = 0.2, ...) {
 # bootstrapMSmix ----
 #' Bootstrap confidence intervals for the fitted mixture of Mallows models with Spearman distance
 #'
-#' @description Return the bootstrap confidence intervals for the parameters of a mixture of Mallow models with Spearman distance fitted on partial rankings.
+#' @description Return the bootstrap confidence intervals for the parameters of a mixture of Mallows models with Spearman distance fitted on partial rankings.
 #'
 #' @details
 #' When \code{n_clust = 1}, two types of bootstrap are available: 1) \code{type = "non-parametric"} (default);
@@ -5278,7 +5278,7 @@ plot.emMSmoe <- function(x, max_scale_w = 20, mar_lr = 0.4, mar_tb = 0.2, ...) {
 #'
 #' When \code{n_clust > 1}, two types of bootstrap are available: 1) \code{type = "soft"} (default), which is
 #' the soft-separated bootstrap (Crispino et al., 2025+) and returns confidence intervals for all
-#' the parameters of the mixture of Mallow models with Spearman distance; 2) \code{type = "separated"}, which is the separated bootstrap
+#' the parameters of the mixture of Mallows models with Spearman distance; 2) \code{type = "separated"}, which is the separated bootstrap
 #' (Taushanov and Berchtold, 2019) and returns bootstrap samples for the component-specific
 #' consensus rankings and precisions.
 #'
@@ -5630,7 +5630,7 @@ homo_bootstrapMSmix <- function(rankings,
 #/'
 #/' Two types of bootstrap are available: 1) \code{type = "soft"} (default), which is
 #/' the soft-separated bootstrap (Crispino et al., 2025+) and returns confidence intervals for all
-#/' the parameters of the mixture of Mallow models with Spearman distance; 2) \code{type = "separated"}, which is the separated bootstrap
+#/' the parameters of the mixture of Mallows models with Spearman distance; 2) \code{type = "separated"}, which is the separated bootstrap
 #/' (Taushanov and Berchtold, 2019) and returns bootstrap samples for the component-specific
 #/' consensus rankings and precisions.
 #/'
@@ -5982,12 +5982,12 @@ plot.bootMSmix <- function(x, ...) {
 # bootstrapMSmoe ----
 #' Bootstrap confidence intervals for mixture of experts of Mallows models with Spearman distance
 #'
-#' @description Return the bootstrap confidence intervals for the parameters of a mixture of experts of Mallow models with Spearman distance fitted on full or partial rankings.
+#' @description Return the bootstrap confidence intervals for the parameters of a mixture of experts of Mallows models with Spearman distance fitted on full or partial rankings.
 #'
 #' @details
 #' Two types of bootstrap are available: 1) \code{type = "soft"} (default), which is
 #' the soft-separated bootstrap (Crispino et al., 2025) and returns confidence intervals for all
-#' the parameters of the mixture of experts of Mallow models with Spearman distance; 2) \code{type = "separated"}, which is the separated bootstrap
+#' the parameters of the mixture of experts of Mallows models with Spearman distance; 2) \code{type = "separated"}, which is the separated bootstrap
 #' (Taushanov and Berchtold, 2019) and returns bootstrap samples only for the component-specific
 #' consensus rankings and precisions.
 #'
@@ -6162,7 +6162,7 @@ hetero_bootstrapMSmoe <- function(rankings,
 
 
   if (!(type%in%c("soft","separated"))){
-    stop("Only soft and separated bootstrap types are available for the G-component mixture of experts of Mallow models.\n")
+    stop("Only soft and separated bootstrap types are available for the G-component mixture of experts of Mallows models.\n")
   }
 
 
@@ -6419,7 +6419,7 @@ plot.bootMSmoe <- function(x, ...) {
 # seMSmix ----
 #/' Utility for the exported confintMSmix
 #/'
-#/' Return the (asymptotic) standard errors of the continuous parameters (component-specific precisions and weights) of a mixture of Mallow models with Spearman distance fitted to full rankings.
+#/' Return the (asymptotic) standard errors of the continuous parameters (component-specific precisions and weights) of a mixture of Mallows models with Spearman distance fitted to full rankings.
 #/'
 #/' The current implementation of the standard errors assumes that the observed rankings are complete.
 #/'
@@ -6500,7 +6500,7 @@ seMSmix <- function(object){
 # confintMSmix ----
 #' Asymptotic confidence intervals for the fitted mixture of Mallows models with Spearman distance
 #'
-#' @description Return the asymptotic confidence intervals of the continuous parameters (component-specific precisions and weights) of a mixture of Mallow models with Spearman distance fitted to full rankings.
+#' @description Return the asymptotic confidence intervals of the continuous parameters (component-specific precisions and weights) of a mixture of Mallows models with Spearman distance fitted to full rankings.
 #'
 #' @details The current implementation of the asymptotic confidence intervals assumes that the observed rankings are complete.
 #'
@@ -6523,7 +6523,7 @@ seMSmix <- function(object){
 #'
 #' @examples
 #'
-#' ## Example 1. Simulate rankings from a 2-component mixture of Mallow models
+#' ## Example 1. Simulate rankings from a 2-component mixture of Mallows models
 #' ## with Spearman distance.
 #' set.seed(123)
 #' d_sim <- rMSmix(sample_size = 75, n_items = 8, n_clust = 2)
@@ -6640,7 +6640,7 @@ print.ciMSmix <- function(x, ...) {
 # seMSmoe ----
 #' Standard errors for mixtures of Mallows models with Spearman distance
 #'
-#' @description Return the (Hessian-based) standard errors of the continuous parameters of a mixture of Mallow models with Spearman distance fitted to full rankings, namely the component-specific precisions and weights.
+#' @description Return the (Hessian-based) standard errors of the continuous parameters of a mixture of Mallows models with Spearman distance fitted to full rankings, namely the component-specific precisions and weights.
 #'
 #' @details The current implementation of the standard errors assumes that the observed rankings are complete.
 #'
@@ -6733,7 +6733,7 @@ seMSmoe <- function(object){
 # confintMSmoe ----
 #' Hessian-based confidence intervals for mixtures of Mallows models with Spearman distance
 #'
-#' @description Return the Hessian-based confidence intervals of the continuous parameters of a mixture of Mallow models with Spearman distance fitted to full rankings, namely the component-specific precisions and weights.
+#' @description Return the Hessian-based confidence intervals of the continuous parameters of a mixture of Mallows models with Spearman distance fitted to full rankings, namely the component-specific precisions and weights.
 #'
 #' @details The current implementation of the hessian-based confidence intervals assumes that the observed rankings are complete.
 #'
@@ -6756,7 +6756,7 @@ seMSmoe <- function(object){
 #'
 #' @examples
 #'
-#' ## Example 1. Simulate rankings from a 2-component mixture of Mallow models
+#' ## Example 1. Simulate rankings from a 2-component mixture of Mallows models
 #' ## with Spearman distance.
 #' set.seed(123)
 #' d_sim <- rMSmix(sample_size = 75, n_items = 8, n_clust = 2)

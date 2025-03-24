@@ -1,5 +1,36 @@
 NEWS/ChangeLog for MSmix
 --------------------------
+2.0.0   2025-03-XX
+
+MAJOR CHANGES
+    o   confintMSmix(...):
+        [::] modified implementation to jointly compute the asymptotic CIs for precisions and weights
+        [::] variance-covariance matrix of the MLEs now approximated through the inverse of the empirical information matrix, following Mclachlan and Peel (2000).
+        [::] standard errors derived directly from the EM algorithm output, reducing computational burden
+
+MINOR CHANGES
+    o   Naming updates:
+        [::] function `assign_cluster` renamed as `assign_cluster_full`.
+        [::] function `paired_comparisons` renamed as `paired_comparisonsMSmix`.
+    o   MSmix-package.Rd and DESCRIPTION files:
+        [::] replaced occurrences of "hessian-based" with "asymptotic" for consistency.
+    o   bootstrapMSmix(...):
+        [::] removed rounding of the CI bounds returned fot the continuous parameters.
+
+NEW FUNCTIONS
+    o   `rearrange_output_mix(...)` for relabelling the mixture components in the MLEs of the MMS mixture parameters.
+    o   `print.confintMSmix(...)` for printing the asymptotic CIs.
+    o   `print.bootMSmix(...)` for printing the bootstrapped CIs.
+
+NEW FEATURES
+    o   All plots are now returned as a list.
+
+DOCUMENTATION
+    o   The manual has been globally reviewed and updated.
+    o   Documentation added for all functions, including hidden ones.
+
+###################################################################################################################
+
 
 1.0.2   2024-06-15
 
