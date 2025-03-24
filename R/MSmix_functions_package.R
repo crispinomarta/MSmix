@@ -5078,10 +5078,6 @@ print.emMSmoe <- function(x, ...) {
 #'
 #' @seealso \code{\link{fitMSmoe}}, \code{\link{plot.emMSmoe}}
 #'
-#' @examples
-#'
-#'
-#'
 #' @export summary.emMSmoe
 #' @export
 summary.emMSmoe <- function(object, digits = 3, ...) {
@@ -5190,9 +5186,6 @@ print.summary.emMSmoe <- function(x, ...) {
 #'
 #'
 #' @seealso \code{\link{fitMSmoe}}, \code{\link{summary.emMSmoe}}
-#'
-#' @examples
-#'
 #'
 #' @export plot.emMSmoe
 #' @export
@@ -6032,9 +6025,6 @@ plot.bootMSmix <- function(x, ...) {
 #' Efron B (1982). The Jackknife, the Bootstrap, and Other Resampling Plans. Philadelphia, \emph{Pa. :Society for Industrial and Applied Mathematics}.
 #'
 #'
-#' @examples
-#'
-#'
 #'
 #' @export
 #'
@@ -6655,7 +6645,6 @@ print.ciMSmix <- function(x, ...) {
 #' @details The current implementation of the standard errors assumes that the observed rankings are complete.
 #'
 #' @param object An object of class \code{"emMSmoe"} returned by \code{\link{fitMSmoe}}.
-#' @param conf_level Value in the interval (0,1] indicating the desired confidence level of the interval estimates. Defaults to 0.95.
 #'
 #'
 #' @return A list with the following named components:
@@ -6671,23 +6660,6 @@ print.ciMSmix <- function(x, ...) {
 #' McLachlan G and Peel D (2000). Finite Mixture Models. \emph{Wiley Series in Probability and Statistics}, John Wiley & Sons.
 #'
 #'
-#' @examples
-#'
-#' ## Example 1. Simulate rankings from a 2-component mixture of Mallow models
-#' ## with Spearman distance.
-#' set.seed(123)
-#' d_sim <- rMSmoe(sample_size = 75, n_items = 8, n_clust = 2)
-#' rankings <- d_sim$samples
-#' # Fit the basic Mallows model with Spearman distance.
-#' set.seed(123)
-#' fit1 <- fitMSmoe(rankings = rankings, n_clust = 1, n_start = 10)
-#' # Compute the hessian-based confidence intervals for the MLEs of the precision.
-#' confintMSmoe(object = fit1)
-#' # Fit the true model.
-#' set.seed(123)
-#' fit2 <- fitMSmoe(rankings = rankings, n_clust = 2, n_start = 10)
-#' # Compute the hessian-based confidence intervals for the MLEs of the weights and precisions.
-#' confintMSmoe(object = fit2)
 #'
 #' @export
 #'
@@ -6899,11 +6871,12 @@ print.confintMSmoe <- function(x, ...) {
 }
 
 # rearrange_output_mix ----
-#' Arrange the output of emMSmim for label switching
+#' Arrange the output of MLE of mixtures of Mallows models with Spearman distance via EM algorithms
 #'
+#' Arrange the output of the object of class \code{"emMSmix"} according to a given relabelling of the mixture component labels.
 #'
-#' @param x An object of class \code{"emMSmix"} returned by \code{\link{fitMSmix}}.
-#' @param ord vector of length n_clust with the desired ordering
+#' @param output An object of class \code{"emMSmix"} returned by \code{\link{fitMSmix}}.
+#' @param ord Integer vector of length \code{n_clust} with the desired relabelling of the mixture component labels.
 #'
 #' @export rearrange_output_mix
 #' @export
@@ -6934,17 +6907,16 @@ rearrange_output_mix <- function(output, ord){
 
 
 # rearrange_output_moe ----
-#' Arrange the output of emMSmoe for label switching
+#' Arrange the output of MLE of MoE of Mallows models with Spearman distance via EM algorithms
 #'
+#' Arrange the output of the object of class \code{"emMSmoe"} according to a given relabelling of the mixture component labels.
 #'
-#' @param x An object of class \code{"emMSmoe"} returned by \code{\link{fitMSmoe}}.
-#' @param ord vector of length n_clust with the desired ordering
+#' @param output An object of class \code{"emMSmoe"} returned by \code{\link{fitMSmoe}}.
+#' @param ord Integer vector of length \code{n_clust} with the desired relabelling of the mixture component labels.
 #'
 #' @export rearrange_output_moe
 #' @export
 #'
-
-
 rearrange_output_moe <- function(output, ord){
 
 

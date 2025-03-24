@@ -20,14 +20,9 @@ Either the exact or the approximate (log-)variance of the Spearman distance unde
 Compute (either the exact or the approximate) (log-)variance of the Spearman distance under the Mallow model with Spearman distance.
 }
 \details{
-When \eqn{n\leq 20}, the variance is exactly computed by relying on the Spearman distance distribution
-provided by OEIS Foundation Inc. (2023). When \eqn{n>20}, it is approximated with the method introduced by Crispino et al. (2023) and, if \eqn{n>170}, the approximation is also restricted over a fixed grid of values for the Spearman distance to limit computational burden.
+When \eqn{n\leq 20}, the variance is exactly computed by relying on the Spearman distance distribution provided by OEIS Foundation Inc. (2023). When \eqn{n>20}, it is approximated with the method introduced by Crispino et al. (2023) and, if \eqn{n>170}, the approximation is also restricted over a fixed grid of values for the Spearman distance to limit computational burden.
 
-When \eqn{\theta=0}, this is equal to \eqn{\frac{n^2(n-1)(n+1)^2}{36}}, which is the variance of the Spearman
-distance under the uniform (null) model.
-
-The variance of the Spearman distance is independent of the consensus ranking of the Mallow model with Spearman distance due to the right-invariance
-of the metric.
+The variance of the Spearman distance is independent of the consensus ranking of the Mallow model with Spearman distance due to the right-invariance of the metric. When \eqn{\theta=0}, this is equal to \eqn{\frac{n^2(n-1)(n+1)^2}{36}}, which is the variance of the Spearman distance under the uniform (null) model.
 }
 \examples{
 
@@ -47,7 +42,7 @@ curve(var_spear_dist_vec(x, n_items = 10),
   xlab = expression(theta), ylab = expression(log(V[theta](D))),
   main = "Log-variance of the Spearman distance")
 
-## Example 4. Log--variance of the Spearman distance for varying number of items
+## Example 4. Log-variance of the Spearman distance for varying number of items
 # and values of the concentration parameter.
 var_spear_dist_vec <- Vectorize(var_spear_dist, vectorize.args = "theta")
 curve(var_spear_dist_vec(x, n_items = 10),

@@ -22,15 +22,15 @@
 
 \item{lab_size}{Positive scalar: the magnification of the labels on the axes. Defaults to 3.}
 
-\item{gradient}{List of three elements with the colors for low, mid and high values of the distances in the heatmap. The element \code{mid} can take the value of NULL.}
+\item{gradient}{List of three elements with the colors for low, mid and high values of the distances in the heatmap. The element \code{mid} can take the value \code{NULL}.}
 
 \item{...}{Further arguments passed to or from other methods (not used).}
 }
 \value{
-Produce a heatmap of the Spearman distance matrix between all pairs of full rankings.
+A heatmap of the Spearman distance matrix between all pairs of full rankings.
 }
 \description{
-\code{plot} method for class \code{"dist"}. It is useful to preliminary explore the presence of patterns (groups) of similar preferences in the ranking dataset.
+\code{plot} method for class \code{"dist"}. It displays a heatmap which is useful to preliminarily explore the presence of patterns (groups) of similar preferences in the ranking dataset.
 }
 \details{
 \code{plot.dist} can visualize a distance matrix of any metric, provided that its class is \code{"dist"}. It can take a few seconds if the size of the distance matrix is large.

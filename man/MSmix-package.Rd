@@ -8,8 +8,7 @@ The \pkg{MSmix} package provides functions to fit and analyze finite
 Mixtures of Mallows models with Spearman distance (a.k.a. \eqn{\theta}-model)
 for full and partial rankings with arbitrary missing positions.
 Inference is conducted within the maximum likelihood (ML) framework via EM algorithms.
-Estimation uncertainty is tackled via diverse versions of bootstrapping
-as well as via Hessian-based standard errors calculations.
+Estimation uncertainty is tackled via diverse versions of bootstrapped and asymptotic confidence intervals.
 }
 \details{
 The \emph{Mallows model} is one of the most popular and frequently applied
@@ -67,7 +66,7 @@ with Spearman distance.}
 \strong{Estimation uncertainty}
 \describe{
 \item{\code{\link{bootstrapMSmix}}}{Bootstrap confidence intervals for mixtures of Mallows models with Spearman distance.}
-\item{\code{\link{confintMSmix}}}{Hessian-based confidence intervals for mixtures of Mallows models with Spearman distance.}
+\item{\code{\link{confintMSmix}}}{Asymptotic confidence intervals for mixtures of Mallows models with Spearman distance.}
 }
 \strong{Spearman distance utilities}
 \describe{

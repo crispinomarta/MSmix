@@ -30,29 +30,39 @@
 \item{...}{Further arguments passed to or from other methods (not used).}
 }
 \value{
-Produce 5 plots to display descriptive summaries of the partial ranking dataset, namely: i) a barplot of the frequency distribution (\%) of the number of items actually ranked in each partial sequence, ii) a basic pictogram of the mean rank vector, iii) a heatmap of the marginal distirbutions (either by item or by rank), iv) the ecdf of the marginal rank distributions and v) a bubble plot of the pairwise comparison matrix.
+A list of 5 labelled plots displaying descriptive summaries of the partial ranking dataset, namely: i) \code{n_ranked_distr}: a barplot of the frequency distribution (\%) of the number of items actually ranked in each partial sequence, ii) \code{picto_mean_rank}: a basic pictogram of the mean rank vector, iii) \code{marginals}: a heatmap of the marginal distributions (either by item or by rank), iv) \code{ecdf}: the ecdf of the marginal rank distributions and v) \code{pc}: a bubble plot of the pairwise comparison matrix.
 }
 \description{
 \code{plot} method for class \code{"data_descr"}.
 }
+\details{
+The plots of the marginals distributions and pairwise comparisons are constructed if the object \code{x} was obtained from the \code{data_description} routine with arguments \code{marg = TRUE} and \code{pc = TRUE}; otherwise, a \code{NULL} element in the output list is returned.
+}
 \examples{
 
-## Example 1. Plot sample statistics for the Antifragility dataset.
+## Example 1. Plot the mean rank vector and marginal distributions for the Antifragility dataset.
 r_antifrag <- ranks_antifragility[, 1:7]
 desc <- data_description(r_antifrag)
-plot(desc)
+p_desc <- plot(desc)
+p_desc$picto_mean_rank()
+p_desc$marginals()
 
-## Example 2. Plot sample statistics for the Sports dataset.
+## Example 2. Plot the distribution of the number of ranked items and the
+# pairwise comparison matrix for the Sports dataset.
 r_sports <- ranks_sports[, 1:8]
 desc <- data_description(rankings = r_sports, borda_ord = TRUE)
-plot(desc, cex_text_mean = 1.2)
+p_desc <- plot(desc, cex_text_mean = 1.2)
+p_desc$n_ranked_distr()
+p_desc$pc()
 
-## Example 3. Plot sample statistics for the Sports dataset by gender.
+## Example 3. Plot the ecdf's for the marginal rank distributions for the Sports dataset by gender.
 r_sports <- ranks_sports[, 1:8]
 desc_f <- data_description(rankings = r_sports, subset = (ranks_sports$Gender == "Female"))
-plot(desc_f, cex_text_mean = 1.2)
+p_desc_f <- plot(desc_f, cex_text_mean = 1.2)
+p_desc_f$ecdf()
 desc_m <- data_description(rankings = r_sports, subset = (ranks_sports$Gender == "Male"))
-plot(desc_m, cex_text_mean = 1.2)
+p_desc_m <- plot(desc_m, cex_text_mean = 1.2)
+p_desc_m$ecdf()
 
 
 }

@@ -11,7 +11,7 @@ partition_fun_spear(theta, n_items, log = TRUE)
 
 \item{n_items}{Number of items.}
 
-\item{log}{Logical: whether the partition function on the log scale must be returned. Defaults to \code{TRUE}.}
+\item{log}{Logical: whether the partition function must be returned on the log scale. Defaults to \code{TRUE}.}
 }
 \value{
 Either the exact or the approximate (log-)partition function of the Mallow model with Spearman distance.
@@ -20,7 +20,7 @@ Either the exact or the approximate (log-)partition function of the Mallow model
 Compute (either the exact or the approximate) (log-)partition function of the Mallow model with Spearman distance.
 }
 \details{
-When \eqn{n\leq 20}, the partition is exactly computed by relying on the Spearman distance distribution provided by OEIS Foundation Inc. (2023). When \eqn{n>20}, it is approximated with the method introduced by Crispino et al. (2023) and, if \eqn{n>170}, the approximation is also restricted over a fixed grid of values for the Spearman distance to limit computational burden.
+When \eqn{n\leq 20}, the partition function is exactly computed by relying on the Spearman distance distribution provided by OEIS Foundation Inc. (2023). When \eqn{n>20}, it is approximated with the method introduced by Crispino et al. (2023) and, if \eqn{n>170}, the approximation is also restricted over a fixed grid of values for the Spearman distance to limit computational burden.
 
 The partition function is independent of the consensus ranking of the Mallow model with Spearman distance due to the right-invariance of the metric. When \eqn{\theta=0}, the partition function is equivalent to \eqn{n!}, which is the normalizing constant of the uniform (null) model.
 }
@@ -42,8 +42,7 @@ curve(partition_fun_spear_vec(x, n_items = 10), from = 0, to = 0.1, lwd = 2,
   ylim = c(7, log(factorial(10))))
 
 ## Example 4. Log-partition function of the Mallow model with Spearman distance
-## for varying number of items
-# and values of the concentration parameter.
+## for varying number of items and values of the concentration parameter.
 partition_fun_spear_vec <- Vectorize(partition_fun_spear, vectorize.args = "theta")
 curve(partition_fun_spear_vec(x, n_items = 10),
   from = 0, to = 0.1, lwd = 2, col = 2,

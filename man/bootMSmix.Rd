@@ -2,7 +2,7 @@
 % Please edit documentation in R/MSmix_functions_package.R
 \name{print.bootMSmix}
 \alias{print.bootMSmix}
-\title{Print of the bootstrap confidence intervals for mixtures of Mallows models with Spearman distance}
+\title{Print of the bootstrap confidence intervals for the fitted mixture of Mallows models with Spearman distance}
 \usage{
 \method{print}{bootMSmix}(x, ...)
 }

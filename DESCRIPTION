@@ -10,7 +10,7 @@ Description: Fit and analysis of finite Mixtures of Mallows models with Spearman
 License: GPL (>= 3)
 Repository: CRAN
 LinkingTo: Rcpp
-Imports: BayesMallows (>= 2.0.1), bmixture (>= 1.7.0), data.table (>= 1.15.0), factoextra (>= 1.0.7), fields (>= 15.2.0), foreach (>= 1.5.2), ggbump (>= 0.1.0), ggplot2 (>= 3.4.4), gmp (>= 0.7.4), gridExtra (>= 2.3.0), methods (>= 4.3.1), magrittr (>= 2.0.3), Rankcluster (>= 0.98.0), RColorBrewer (>= 1.1.3), Rcpp (>= 1.0.12), reshape (>= 0.8.9), rlang (>= 1.1.3), scales (>= 1.3.0), spsUtil (>= 0.2.2), stats (>= 4.3.1)
+Imports: BayesMallows (>= 2.0.1), bmixture (>= 1.7.0), data.table (>= 1.15.0), factoextra (>= 1.0.7), fields (>= 15.2.0), foreach (>= 1.5.2), ggbump (>= 0.1.0), ggplot2 (>= 3.4.4), gmp (>= 0.7.4), gridExtra (>= 2.3.0), methods (>= 4.3.1), magrittr (>= 2.0.3), nnet (>= 7.3.19), Rankcluster (>= 0.98.0), RColorBrewer (>= 1.1.3), Rcpp (>= 1.0.12), reshape (>= 0.8.9), rlang (>= 1.1.3), scales (>= 1.3.0), spsUtil (>= 0.2.2), stats (>= 4.3.1)
 Depends: R (>= 4.3.0), dplyr (>= 1.1.4)
 Suggests: doParallel
 NeedsCompilation: yes

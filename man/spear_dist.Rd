@@ -18,7 +18,7 @@ spear_dist(
 
 \item{rho}{An optional full ranking whose Spearman distance from each row in \code{rankings} must be computed. Defaults to \code{NULL}, meaning that the Spearman distance matrix between all pairs of rows in \code{rankings} must be computed.}
 
-\item{subset}{Optional logical or integer vector specifying the subset of observations, i.e. rows of the \code{rankings}, to be kept. Missing values are taken as \code{FALSE}.}
+\item{subset}{Optional logical or integer vector specifying the subset of observations, i.e. rows of the \code{rankings}, to be kept. Missing values are taken as \code{FALSE}. Defaults to \code{NULL} meaning that all the rows are considered.}
 
 \item{diag}{Logical: whether the diagonal of the Spearman distance matrix must be returned. Used when \code{rho = NULL}. Defaults to \code{FALSE}.}
 
@@ -27,13 +27,13 @@ spear_dist(
 \item{plot_dist_mat}{Logical: whether the Spearman distance matrix must be plotted. Used when \code{rho = NULL}. Defaults to \code{FALSE}.}
 }
 \value{
-When \code{rho = NULL}, an object of class \code{"dist"} corresponding to the Spearman distance matrix; otherwise, a vector with the Spearman distances between each row in \code{rankings} and \code{rho}.
+When \code{rho = NULL}, an object of class \code{"dist"} corresponding to the Spearman distance matrix; otherwise, a vector with the Spearman distances between each row in \code{rankings} and the full ranking \code{rho}.
 }
 \description{
-Compute either the Spearman distance between each row of a full ranking matrix and a reference complete ranking, or the Spearman distance matrix between the rows of a full ranking matrix.
+Compute either the Spearman distance between each row of a full ranking matrix and a reference complete ranking, or the Spearman distance matrix between all pairs of full rankings.
 }
 \details{
-When \code{rho = NULL}, \code{spear_dist} recalls the \code{\link{dist}} function from the \code{base} package to compute the squared Euclidian distance between full rankings; otherwise, it recalls the \code{\link{compute_rank_distance}} routine of the \code{BayesMallows} package, which implements several metrics for rankings.
+When \code{rho = NULL}, \code{spear_dist} recalls the \code{\link{dist}} function from the \code{base} package to compute the Spearman metric as squared Euclidian distance between all pairs of rows in \code{rankings}; otherwise, it recalls the \code{\link{compute_rank_distance}} routine of the \code{BayesMallows} package for the computation of the Spearman distance between each row in \code{rankings} and the full ranking \code{rho}.
 }
 \examples{
 

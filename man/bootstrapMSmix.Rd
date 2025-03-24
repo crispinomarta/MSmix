@@ -3,7 +3,7 @@
 \name{bootstrapMSmix}
 \alias{bootstrapMSmix}
 \alias{plot.bootMSmix}
-\title{Bootstrap confidence intervals for mixtures of Mallows models with Spearman distance}
+\title{Bootstrap confidence intervals for the fitted mixture of Mallows models with Spearman distance}
 \usage{
 bootstrapMSmix(
   object,
@@ -24,7 +24,7 @@ bootstrapMSmix(
 
 \item{type}{Character indicating which bootstrap method must be used. Available options are: \code{"non-parametric"} or \code{"parametric"} for the \eqn{G=1} case, and \code{"soft"} or \code{"separated"} for the \eqn{G>1} case. Defaults to \code{"non-parametric"} when \code{n_clust = 1} and to \code{"soft"} when \code{n_clust > 1}. See Details.}
 
-\item{conf_level}{Value in the interval (0,1] indicating the desired confidence level of the interval estimates. Defaults to 0.95.}
+\item{conf_level}{Numeric: value in the interval (0,1] indicating the desired confidence level of the interval estimates. Defaults to 0.95.}
 
 \item{all}{Logical: whether the bootstrap samples of the MLEs for all the parameters must be returned. Defaults to \code{FALSE}.}
 
@@ -39,22 +39,20 @@ bootstrapMSmix(
 \value{
 An object of class \code{"bootMSmix"}, namely a list with the following named components:
 \describe{
-\item{\code{itemwise_ci_rho}}{The bootstrap itemwise confidence intervals for the component-specific consensus rankings.}
-\item{\code{ci_boot_theta}}{The bootstrap confidence intervals for the component-specific precisions.}
-\item{\code{ci_boot_weights}}{The bootstrap confidence intervals for the mixture weights. Returned when \code{n_clust > 1} and \code{type = "soft"}, otherwise \code{NULL}.}
-\item{\code{boot}}{List containing all the \code{n_boot} bootstrap parameters. Returned when \code{all = TRUE}, otherwise \code{NULL}.}
+\item{\code{itemwise_ci_rho}}{Character \eqn{G}\eqn{\times}{x}\eqn{n} matrix with the bootstrap itemwise confidence intervals for the component-specific consensus rankings.}
+\item{\code{ci_boot_theta}}{Numeric \eqn{G}\eqn{\times}{x}\eqn{2} matrix with the bootstrap confidence intervals for the component-specific precisions.}
+\item{\code{ci_boot_weights}}{Numeric \eqn{G}\eqn{\times}{x}\eqn{2} matrix with the bootstrap confidence intervals for the mixture weights. Returned when \code{n_clust > 1} and \code{type = "soft"}, otherwise \code{NULL}.}
+\item{\code{boot}}{List containing all the \code{n_boot} bootstrap MLEs. Returned when \code{all = TRUE}, otherwise \code{NULL}.}
 }
 
 The \code{boot} sublist contains the following named components:
 \describe{
-\item{\code{rho_boot}}{List of length \code{n_clust} with the bootstrap MLEs of the consensus rankings. Each element of the list is an integer \code{n_boot} \eqn{\times}{x} \code{n_items} matrix containing, in each row, the bootstrap MLEs of the consensus ranking for a specific component.}
+\item{\code{rho_boot}}{List of length \code{n_clust}. Each element is an integer \code{n_boot} \eqn{\times}{x} \code{n_items} matrix with rows containing the bootstrap MLEs of a component-specific consensus ranking.}
 \item{\code{theta_boot}}{Numeric \code{n_boot}\eqn{\times}{x} \code{n_clust} matrix with the bootstrap MLEs of the component-specific precision parameters in each row.}
-\item{\code{weights_boot}}{Numeric \code{n_boot}\eqn{\times}{x} \code{n_clust} matrix with the bootstrap MLEs of the mixture weights in each row. Returned when  \code{n_clust > 1} and \code{type = "soft"}, otherwise \code{NULL}.}
+\item{\code{weights_boot}}{Numeric \code{n_boot}\eqn{\times}{x} \code{n_clust} matrix with the bootstrap MLEs of the mixture weights in each row. Returned when \code{n_clust > 1} and \code{type = "soft"}, otherwise \code{NULL}.}
 }
 
-For the component-specific bootstrap consensus ranking estimates, a heatmap is returned.
-
-For the component-specific precisions and weights (for the latter when \eqn{G > 1}), a kernel density plot is returned.
+A list of 3 labelled plots, namely: i) \code{rho_heatmap}: a heatmap for the component-specific bootstrap consensus ranking estimates (when \code{n_clust > 1}, this is in turn a list of heatmaps for each consensus ranking estimate); ii) \code{theta_density}: a kernel density plot for the component-specific bootstrap precision estimates; iii) \code{weights_density}: a kernel density plot for the bootstrap mixture weight estimates is returned when \code{n_clust > 1} and the object \code{x} was obtained from the \code{bootstrapMSmix} routine with the argument \code{type = "soft"}, otherwise \code{NULL}.
 }
 \description{
 Return the bootstrap confidence intervals for the parameters of a mixture of Mallow models with Spearman distance fitted on partial rankings.
@@ -66,7 +64,7 @@ When \code{n_clust = 1}, two types of bootstrap are available: 1) \code{type = "
 \code{type = "parametric"}, where the latter supports full rankings only.
 
 When \code{n_clust > 1}, two types of bootstrap are available: 1) \code{type = "soft"} (default), which is
-the soft-separated bootstrap (Crispino et al., 2024+) and returns confidence intervals for all
+the soft-separated bootstrap (Crispino et al., 2025+) and returns confidence intervals for all
 the parameters of the mixture of Mallow models with Spearman distance; 2) \code{type = "separated"}, which is the separated bootstrap
 (Taushanov and Berchtold, 2019) and returns bootstrap samples for the component-specific
 consensus rankings and precisions.
@@ -88,29 +86,44 @@ set.seed(12345)
 boot_p <- bootstrapMSmix(object = fit, n_boot = 200,
                        type = "parametric", all = TRUE)
 print(boot_p)
-plot(boot_p)
+# Plot the bootstrap estimates.
+p_boot_p <- plot(boot_p)
+p_boot_p$rho_heatmap()
+p_boot_p$theta_density()
 
 ## Example 2. Compute the bootstrap 95\% confidence intervals for the Antifragility dataset.
-# Let us assume two clusters and apply soft bootstrap.
+# Let us assume two clusters.
 r_antifrag <- ranks_antifragility[, 1:7]
 set.seed(12345)
 fit <- fitMSmix(rankings = r_antifrag, n_clust = 2, n_start = 20)
+# Apply soft bootstrap procedure and set all = TRUE
+# to return the bootstrap MLEs of the consensus ranking.
 set.seed(12345)
 boot_soft <- bootstrapMSmix(object = fit, n_boot = 500,
                       n_start = 20, all = TRUE)
-plot(boot_soft)
+print(boot_soft)
+# Plot the bootstrap estimates.
+p_boot_soft <- plot(boot_soft)
+p_boot_soft$rho_heatmap[[1]]()
+p_boot_soft$rho_heatmap[[2]]()
+p_boot_soft$theta_density()
+p_boot_soft$weights_density()
 # Apply separated bootstrap and compare results.
 set.seed(12345)
 boot_sep <- bootstrapMSmix(object = fit, n_boot = 500,
                      n_start = 20, type = "separated", all = TRUE)
-plot(boot_sep)
+print(boot_sep)
+p_boot_sep <- plot(boot_sep)
+p_boot_sep$rho_heatmap[[1]]()
+p_boot_sep$rho_heatmap[[2]]()
+p_boot_sep$theta_density()
 print(boot_soft)
 print(boot_sep)
 
 
 }
 \references{
-Crispino M, Mollica C and Modugno L (2024+). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
+Crispino M, Mollica C and Modugno L (2025+). MSmix: An R Package for clustering partial rankings via mixtures of Mallows Models with Spearman distance. \emph{(submitted)}
 
 Taushanov Z and Berchtold A (2019). Bootstrap validation of the estimated parameters in mixture models used for clustering. \emph{Journal de la société française de statistique}, \bold{160}(1).
 

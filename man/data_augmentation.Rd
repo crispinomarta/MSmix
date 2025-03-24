@@ -25,7 +25,7 @@ The data augmentation of a full ranking returns the complete ranking itself arra
 ## Example 1. Data augmentation of a single partial top-9 ranking.
 data_augmentation(c(3, 7, 5, 1, NA, 4, NA, 8, 2, 6, NA, 9))
 
-## Example 2. Data augmentation of partial rankings with different censoring patterns.
+## Example 2. Data augmentation of partial ranking matrix with different censoring patterns.
 rank_data <- rbind(c(NA, 4, NA, 1, NA),
                    c(NA, NA, NA, NA, 1),
                    c(2, NA, 1, NA, 3),

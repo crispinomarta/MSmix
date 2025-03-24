@@ -7,12 +7,12 @@
 data_conversion(data, subset = NULL)
 }
 \arguments{
-\item{data}{Integer \eqn{N}\eqn{\times}{x}\eqn{n} matrix with partial sequences whose format has to be converted in each row. Missing entries must be coded as \code{NA}.}
+\item{data}{Integer \eqn{N}\eqn{\times}{x}\eqn{n} matrix with partial sequences (either rankings or orderings) in each row, whose format has to be converted. Missing entries must be coded as \code{NA}.}
 
-\item{subset}{Optional logical or integer vector specifying the subset of observations, i.e. rows of \code{rankings}, to be considered. Missing values are taken as \code{FALSE}.}
+\item{subset}{Optional logical or integer vector specifying the subset of observations, i.e. rows of \code{data}, to be kept. Missing values are taken as \code{FALSE}. Defaults to \code{NULL} meaning that all the rows are considered.}
 }
 \value{
-Integer \eqn{N}\eqn{\times}{x}\eqn{n} matrix of partial sequences with the inverse format.
+Integer \eqn{N}\eqn{\times}{x}\eqn{n} matrix of partial sequences with inverse format with respect to the input \code{data}.
 }
 \description{
 Convert the format of the input dataset from rankings to orderings and vice versa. Differently from existing analogous functions supplied by other \code{R} packages, \code{data_conversion} supports also partial rankings/orderings with arbitrary patterns of censoring.

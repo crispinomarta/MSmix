@@ -27,13 +27,13 @@ When \eqn{n\leq 20}, the exact distribution provided by OEIS Foundation Inc. (20
 
 ## Example 1. Exact Spearman distance distribution for n=20 items.
 distr <- spear_dist_distr(n_items = 20, log = FALSE)
-plot(distr$distances,distr$logcard,type='l',ylab = 'Frequency',xlab='d',
+plot(distr$distances,distr$logcard,type="l",ylab="Frequency",xlab="d",
 main='Distribution of the Spearman distance\nunder the null model')
 
 
 ## Example 2. Approximate Spearman distance distribution for n=50 items with log-frequencies.
 distr <- spear_dist_distr(n_items = 50)
-plot(distr$distances,distr$logcard,type='l',ylab = 'Log-frequency',xlab='d',
+plot(distr$distances,distr$logcard,type="l",ylab="Log-frequency",xlab="d",
     main='Log-distribution of the Spearman distance\nunder the null model')
 
 }
