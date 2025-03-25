@@ -1343,7 +1343,7 @@ data_censoring <- function(rankings, topk = TRUE, nranked = NULL, probs = rep(1,
 #'
 #' @description Compute either the Spearman distance between each row of a full ranking matrix and a reference complete ranking, or the Spearman distance matrix between all pairs of full rankings.
 #'
-#' @details When \code{rho = NULL}, \code{spear_dist} recalls the \code{\link{dist}} function from the \code{base} package to compute the Spearman metric as squared Euclidian distance between all pairs of rows in \code{rankings}; otherwise, it recalls the \code{\link{compute_rank_distance}} routine of the \code{BayesMallows} package for the computation of the Spearman distance between each row in \code{rankings} and the full ranking \code{rho}.
+#' @details When \code{rho = NULL}, \code{spear_dist} recalls the \code{\link{dist}} function from the \code{base} package to compute the Spearman metric as squared Euclidian distance between all pairs of rows in \code{rankings}; otherwise, it recalls the \code{compute_rank_distance} routine of the \code{BayesMallows} package for the computation of the Spearman distance between each row in \code{rankings} and the full ranking \code{rho}.
 #'
 #' @param rankings Integer \eqn{N}\eqn{\times}{x}\eqn{n} matrix or data frame with full rankings in each row.
 #' @param rho An optional full ranking whose Spearman distance from each row in \code{rankings} must be computed. Defaults to \code{NULL}, meaning that the Spearman distance matrix between all pairs of rows in \code{rankings} must be computed.

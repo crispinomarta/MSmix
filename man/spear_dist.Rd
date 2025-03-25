@@ -33,7 +33,7 @@ When \code{rho = NULL}, an object of class \code{"dist"} corresponding to the Sp
 Compute either the Spearman distance between each row of a full ranking matrix and a reference complete ranking, or the Spearman distance matrix between all pairs of full rankings.
 }
 \details{
-When \code{rho = NULL}, \code{spear_dist} recalls the \code{\link{dist}} function from the \code{base} package to compute the Spearman metric as squared Euclidian distance between all pairs of rows in \code{rankings}; otherwise, it recalls the \code{\link{compute_rank_distance}} routine of the \code{BayesMallows} package for the computation of the Spearman distance between each row in \code{rankings} and the full ranking \code{rho}.
+When \code{rho = NULL}, \code{spear_dist} recalls the \code{\link{dist}} function from the \code{base} package to compute the Spearman metric as squared Euclidian distance between all pairs of rows in \code{rankings}; otherwise, it recalls the \code{compute_rank_distance} routine of the \code{BayesMallows} package for the computation of the Spearman distance between each row in \code{rankings} and the full ranking \code{rho}.
 }
 \examples{
 
@@ -58,5 +58,5 @@ dist_f
 Sørensen Ø, Crispino M, Liu Q and Vitelli V (2020). BayesMallows: An R Package for the Bayesian Mallows Model. \emph{The R Journal}, \bold{12}(1), pages 324--342, DOI: 10.32614/RJ-2020-026.
 }
 \seealso{
-\code{\link{plot.dist}}, \code{\link[BayesMallows]{compute_rank_distance}}
+\code{\link{plot.dist}}
 }
